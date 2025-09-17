@@ -93,10 +93,12 @@ export default function GrapesEditor() {
                 body: JSON.stringify(pageData),
             });
              clearEditor(editorRef.current);
-             router.push('/admin/dashboard/manage-pages')
-        } catch (err) {
-            console.error("Error saving page:", err);
-        }
+            } catch (err) {
+                console.error("Error saving page:", err);
+            }
+            finally{
+                router.push('/admin/dashboard/manage-pages')
+            }
     };
     return (
         <div className="flex flex-col h-screen">

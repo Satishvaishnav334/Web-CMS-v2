@@ -101,7 +101,7 @@ export default function PageDashboard() {
                 <td className="border border-gray-300 px-4 py-2">{page.slug}</td>
                 <td className="border border-gray-300 px-4 py-2">{page.status}</td>
                 <td className="border border-gray-300 px-4 py-2">
-                  <Link href={`/pages/${page.slug}`} className="underline text-blue-600">Link</Link>
+                 {page.status == "draft" ? "Not Publised" : <Link href={`/pages/${page.slug}`} className="underline text-blue-600">Link</Link>}
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
                   {new Date(page.updatedAt).toLocaleString()}

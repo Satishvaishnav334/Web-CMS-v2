@@ -1,5 +1,4 @@
-
-import  connectDB  from "@/lib/connect";
+import connectDB from "@/lib/connect";
 import Page from "@/db/models/pages";
 
 export default async function PageRenderer({
@@ -8,14 +7,20 @@ export default async function PageRenderer({
   params: { slug: string };
 }) {
   await connectDB();
-    console.log(params.slug)
+
   interface PageType {
     html?: string;
     css?: string;
+    status?: string;
     [key: string]: any;
   }
- const slug =  params.slug;
-  const page = await Page.findOne({ slug }).lean() as PageType | null;
+
+  const slug = params.slug;
+
+  // ✅ Only fetch published pages
+  const page = (await Page.findOne({ slug, status: "published" }).lean()) as
+    | PageType
+    | null;
 
   if (!page) {
     return <div>Page not found</div>;

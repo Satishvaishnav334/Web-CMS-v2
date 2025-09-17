@@ -95,23 +95,21 @@ export default function GrapesEditor() {
             editor.setComponents("");
             editor.setStyle("");
         }
-    };
 
-    const handleSave = async () => {
+    };
+    const handleSave = async (publish: boolean = false) => {
         if (!editorRef.current) return;
 
         const html = editorRef.current.getHtml();
         const css = editorRef.current.getCss();
         const json = editorRef.current.getComponents().toJSON();
-        const styles = editorRef.current.getStyle().toJSON();
 
         const pageData = {
             slug,
             html,
             css,
             json,
-            styles,
-            status: "draft",
+            status: publish ? "published" : "draft", // ✅ control status here
         };
 
         try {
@@ -122,21 +120,33 @@ export default function GrapesEditor() {
             });
 
             clearEditor(editorRef.current);
-            router.push('/admin/dashboard/manage-pages')
         } catch (err) {
             console.error("Error saving page:", err);
+        }
+        finally {
+            router.push('/admin/dashboard/manage-pages')
         }
     };
 
     return (
-        <div className="flex flex-col h-screen">
-            <div ref={editorContainerRef} />
-            <div className="p-4 border-t flex justify-end bg-gray-100">
+        <div className="flex flex-col justify-between h-screen">
+            {/* Editor container */}
+            <div ref={editorContainerRef} className="!h-screen w-full" />
+
+            {/* Fixed-position buttons */}
+            <div className="fixed  w-full justify-center items-center top-1 flex gap-3 z-50">
                 <button
-                    onClick={handleSave}
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
+                    onClick={() => handleSave()}
+                    className="bg-gray-600 cursor-pointer text-white px-2 py-1 text-sm rounded shadow-lg"
                 >
-                    Save Page
+                    Save 
+                </button>
+
+                <button
+                    onClick={() => handleSave(true)}
+                    className="bg-gray-400 cursor-pointer text-white px-2 py-1 text-sm rounded shadow-lg"
+                >
+                    Publish 
                 </button>
             </div>
         </div>

@@ -4,11 +4,13 @@ import { useEffect, useRef } from "react";
 import grapesjs, { Editor } from "grapesjs";
 import "grapesjs/dist/css/grapes.min.css";
 import { usePageContext } from "@/components/context/PageContext";
-
+import axios from "axios";
+import { useRouter } from "next/navigation";
 export default function GrapesEditor() {
     const editorRef = useRef<Editor | null>(null);
     const editorContainerRef = useRef<HTMLDivElement | null>(null);
-    const { slug, setSlug } = usePageContext()
+    const { slug } = usePageContext();
+    const router = useRouter()
     useEffect(() => {
         let isMounted = true;
 
@@ -48,6 +50,32 @@ export default function GrapesEditor() {
                         "gjs-plugin-export": {},
                     },
                 });
+
+                // fetch page data by slug
+                // fetch page data by slug
+                if (slug) {
+                    try {
+                        const res = await axios.get(`/api/admin/pages/${slug}`);
+                        const page = res.data.page;
+
+                        if (page && editorRef.current) {
+                            // restore components (json or html)
+                            if (page.json) {
+                                editorRef.current.setComponents(page.json);
+                            } else if (page.html) {
+                                editorRef.current.setComponents(page.html);
+                            }
+
+                            // restore CSS
+                            if (page.css) {
+                                editorRef.current.setStyle(page.css);
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Failed to load page:", err);
+                    }
+                }
+
             }
         };
 
@@ -56,17 +84,19 @@ export default function GrapesEditor() {
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [slug]);
+
     const clearEditor = (editor: Editor) => {
-    try {
-      editor.DomComponents.clear();
-      editor.CssComposer.clear();
-    } catch (err) {
-      console.warn("Clear failed, fallback used", err);
-      editor.setComponents("");
-     
-    }
-  };
+        try {
+            editor.DomComponents.clear();
+            editor.CssComposer.clear();
+        } catch (err) {
+            console.warn("Clear failed, fallback used", err);
+            editor.setComponents("");
+            editor.setStyle("");
+        }
+    };
+
     const handleSave = async () => {
         if (!editorRef.current) return;
 
@@ -85,16 +115,19 @@ export default function GrapesEditor() {
         };
 
         try {
-            await fetch("/api/admin/pages", {
-                method: "POST",
+            await fetch(`/api/admin/pages/${slug}`, {
+                method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(pageData),
             });
-             clearEditor(editorRef.current);
+
+            clearEditor(editorRef.current);
+            router.push('/admin/dashboard/manage-pages')
         } catch (err) {
             console.error("Error saving page:", err);
         }
     };
+
     return (
         <div className="flex flex-col h-screen">
             <div ref={editorContainerRef} />
@@ -107,6 +140,5 @@ export default function GrapesEditor() {
                 </button>
             </div>
         </div>
-
     );
 }

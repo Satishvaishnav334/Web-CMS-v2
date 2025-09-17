@@ -32,10 +32,10 @@ export default function PageDashboard() {
   }, []);
 
   // delete draft
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (slug: string) => {
     try {
-      await axios.delete(`/api/admin/pages/${id}`);
-      setDrafts((prev) => prev.filter((p) => p._id !== id));
+      await axios.delete(`/api/admin/pages/${slug}`);
+      setDrafts((prev) => prev.filter((p) => p.slug !== slug));
     } catch (err) {
       console.error("Delete failed:", err);
     }
@@ -101,21 +101,21 @@ export default function PageDashboard() {
                 <td className="border border-gray-300 px-4 py-2">{page.slug}</td>
                 <td className="border border-gray-300 px-4 py-2">{page.status}</td>
                 <td className="border border-gray-300 px-4 py-2">
-                  <Link href={`/pages/${page.slug}`}>Link</Link>
+                  <Link href={`/pages/${page.slug}`} className="underline text-blue-600">Link</Link>
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
                   {new Date(page.updatedAt).toLocaleString()}
                 </td>
                 <td className="border border-gray-300 px-4 py-2 space-x-2">
                   <Link
-                    href={`/admin/dashboard/create-page/editor?slug=${page.slug}`}
+                    href={`/admin/dashboard/manage-pages/edit/${page.slug}`}
                     className="bg-blue-500 text-white px-3 py-1 rounded"
                     onClick={() => setSlug(page.slug)}
                   >
                     Update
                   </Link>
                   <button
-                    onClick={() => handleDelete(page._id)}
+                    onClick={() => handleDelete(page.slug)}
                     className="bg-red-500 text-white px-3 py-1 rounded"
                   >
                     Delete

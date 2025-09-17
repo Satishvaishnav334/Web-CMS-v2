@@ -4,11 +4,13 @@ import { useEffect, useRef } from "react";
 import grapesjs, { Editor } from "grapesjs";
 import "grapesjs/dist/css/grapes.min.css";
 import { usePageContext } from "@/components/context/PageContext";
-
+import { useRouter } from "next/navigation";
 export default function GrapesEditor() {
     const editorRef = useRef<Editor | null>(null);
     const editorContainerRef = useRef<HTMLDivElement | null>(null);
     const { slug, setSlug } = usePageContext()
+
+    const router = useRouter()
     useEffect(() => {
         let isMounted = true;
 
@@ -91,6 +93,7 @@ export default function GrapesEditor() {
                 body: JSON.stringify(pageData),
             });
              clearEditor(editorRef.current);
+             router.push('/admin/dashboard/manage-pages')
         } catch (err) {
             console.error("Error saving page:", err);
         }

@@ -28,7 +28,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     },
     {
       label: "Add Page",
-      href: "/admin/dashboard/manage-pages",
+      href: "/admin/dashboard/manage-pages/add-page",
       icon: (
         <SquarePlus className="text-gray-200 h-7 w-7 flex-shrink-0" />
       ),

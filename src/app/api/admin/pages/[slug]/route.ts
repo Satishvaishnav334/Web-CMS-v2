@@ -19,7 +19,6 @@ export async function GET(
     return NextResponse.json({ error: "Error fetching page" }, { status: 500 });
   }
 }
-
 export async function PUT(
   req: Request,
   { params }: { params: { slug: string } }
@@ -29,7 +28,6 @@ export async function PUT(
     const { slug } = params;
     const body = await req.json();
 
-    // Extract fields from body
     const {
       newslug,
       pageName,
@@ -42,22 +40,29 @@ export async function PUT(
       seoKeywords,
     } = body;
 
+    // Build update object dynamically
+    const updateData: any = {};
+
+    if (newslug) updateData.slug = newslug;
+    if (pageName) updateData.pageName = pageName;
+    if (status) updateData.status = status;
+
+    // Only update editor fields if provided
+    if (html !== undefined) updateData.html = html;
+    if (css !== undefined) updateData.css = css;
+    if (json !== undefined) updateData.json = json;
+
+    // SEO fields
+    if (seoTitle !== undefined) updateData.seoTitle = seoTitle;
+    if (seoDescription !== undefined) updateData.seoDescription = seoDescription;
+    if (seoKeywords !== undefined) updateData.seoKeywords = seoKeywords;
+
     const page = await Page.findOneAndUpdate(
       { slug },
-      {
-        slug:newslug,
-        pageName,
-        html,
-        css,
-        json,
-        status: status || "draft",
-        seoTitle: seoTitle || "",
-        seoDescription: seoDescription || "",
-        seoKeywords: seoKeywords || [],
-      },
-      { new: true } // return updated page
+      updateData,
+      { new: true }
     );
-    console.log(page)
+
     if (!page) {
       return NextResponse.json(
         { success: false, message: "Page not found" },
@@ -74,6 +79,7 @@ export async function PUT(
     );
   }
 }
+
 
 export async function DELETE(
   req: Request,

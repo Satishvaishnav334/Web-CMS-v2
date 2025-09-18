@@ -5,7 +5,7 @@ import { getCookie } from "cookies-next/client";
 import { useRouter } from "next/navigation";
 import { PageProvider } from "@/components/context/PageContext";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import { LayoutDashboard, SquarePlus, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, SquarePlus, Settings, Menu } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -23,28 +23,28 @@ export default function RootLayout({ children }: RootLayoutProps) {
       label: "Dashboard",
       href: "/admin/dashboard",
       icon: (
-        <LayoutDashboard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <LayoutDashboard className="text-gray-200 h-7 w-7 flex-shrink-0" />
       ),
     },
     {
       label: "Add Page",
       href: "/admin/dashboard/manage-pages",
       icon: (
-        <SquarePlus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <SquarePlus className="text-gray-200 h-7 w-7 flex-shrink-0" />
       ),
     },
     {
       label: "Manage page",
       href: "/admin/dashboard/manage-pages",
       icon: (
-        <Settings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <Settings className="text-gray-200 h-7 w-7 flex-shrink-0" />
       ),
     },
     {
-      label: "Logout",
-      href: "#",
+      label: "Custtom Menu",
+      href: "/admin/dashboard/manage-menu",
       icon: (
-        <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <Menu className="text-gray-200 h-7 w-7 flex-shrink-0" />
       ),
     },
   ];
@@ -109,13 +109,15 @@ export const Logo = () => {
   return (
     <Link
       href="#"
-      className="font-normal flex space-x-2 items-center text-sm text-white py-1 relative z-20"
+      className=" flex space-x-2 items-center text-xl font-bold text-white py-1 relative z-20"
     >
-      <div className="h-5 w-6 bg-black  rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+      <div className="h-5 w-6  flex-shrink-0" >
+        <Image src={logo} alt="logo" />
+      </div>
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="font-medium text-white  whitespace-pre"
+        className=" text-white  whitespace-pre"
       >
         Web CMS v2
       </motion.span>
@@ -129,7 +131,9 @@ export const LogoIcon = () => {
       href="#"
       className="font-normal flex space-x-2 items-center text-sm text-white py-1 relative z-20"
     >
-      <div className="h-5 w-6 bg-white dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+      <div className="h-5 w-6  flex-shrink-0" >
+        <Image src={logo} alt="logo" />
+      </div>
     </Link>
   );
 };

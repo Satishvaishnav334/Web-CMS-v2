@@ -30,15 +30,30 @@ export async function PUT(
     const body = await req.json();
 
     // Extract fields from body
-    const { html, css, json, status } = body;
+    const {
+      newslug,
+      pageName,
+      html,
+      css,
+      json,
+      status,
+      seoTitle,
+      seoDescription,
+      seoKeywords,
+    } = body;
 
     const page = await Page.findOneAndUpdate(
       { slug },
       {
+        slug:newslug,
+        pageName,
         html,
         css,
         json,
         status: status || "draft",
+        seoTitle: seoTitle || "",
+        seoDescription: seoDescription || "",
+        seoKeywords: seoKeywords || [],
       },
       { new: true } // return updated page
     );

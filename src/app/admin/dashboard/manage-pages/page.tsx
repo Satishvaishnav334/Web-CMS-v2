@@ -62,23 +62,17 @@ export default function PageDashboard() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Draft Pages Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-4"> Pages Dashboard</h1>
 
       {/* Input to create a new page */}
       <div className="mb-6 flex gap-2">
-        <input
-          type="text"
-          value={inputSlug}
-          className="border border-red-500 py-1 px-3 rounded-lg"
-          placeholder="Enter page Slug"
-          onChange={(e) => setInputSlug(e.target.value)}
-        />
-        <button
-          onClick={handleGoToEditor}
+       
+        <Link
+        href='/admin/dashboard/manage-pages/add-page  '
           className="bg-blue-600 py-2 px-3 rounded-lg text-white"
         >
           Add New Page
-        </button>
+        </Link>
       </div>
 
       {/* Drafts Table */}

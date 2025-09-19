@@ -37,7 +37,49 @@ export default function AddPage() {
                     width: "100%",
                     storageManager: { type: "local", autosave: false, autoload: false },
                     plugins: [gjsPresetWebpage, gjsBlocksBasic, gjsForms, gjsNavbar, gjsGradient, gjsExport],
+                    panels: { defaults: [] }, // clear default so we control toolbar
                 });
+
+                // ✅ Add "open code" buttons for HTML & CSS
+                editor.Panels.addButton("options", [
+                    {
+                        id: "open-html",
+                        className: "fa fa-code",
+                        command: "open-html",
+                        attributes: { title: "Edit HTML" },
+                    },
+                    {
+                        id: "open-css",
+                        className: "fa fa-paint-brush",
+                        command: "open-css",
+                        attributes: { title: "Edit CSS" },
+                    },
+                ]);
+
+                // ✅ Command: Edit HTML
+                editor.Commands.add("open-html", {
+                    run(editor) {
+                        const html = editor.getHtml();
+                        const css = editor.getCss();
+
+                        const newHtml = prompt("Edit HTML:", html);
+                        if (newHtml !== null) {
+                            editor.setComponents(newHtml);
+                        }
+                    },
+                });
+
+                // ✅ Command: Edit CSS
+                editor.Commands.add("open-css", {
+                    run(editor) {
+                        const css = editor.getCss();
+                        const newCss = prompt("Edit CSS:", css);
+                        if (newCss !== null) {
+                            editor.setStyle(newCss);
+                        }
+                    },
+                });
+
 
                 editorRef.current = editor;
             };

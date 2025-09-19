@@ -3,12 +3,12 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import {
     DndContext,
+    closestCenter,
     useSensor,
     useSensors,
     PointerSensor,
-    DragEndEvent,
-    closestCenter,
 } from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core/dist/types";
 import {
     SortableContext,
     verticalListSortingStrategy,
@@ -48,103 +48,103 @@ interface MenuItemType {
 
 interface Menu {
     _id: string;
-    menuType:string;
+    menuType: string;
     name: string;
     items: MenuItemType[];
     createdAt: string;
 }
 
 
-export  function SortableSubItem({
-subItem,
-  parentId,
-  menuItems,
-  setMenuItems,
-  pages,
-  usedPageIds,
+export function SortableSubItem({
+    subItem,
+    parentId,
+    menuItems,
+    setMenuItems,
+    pages,
+    usedPageIds,
 }: {
-  subItem: SubMenuItem;
-  parentId: string;
-  menuItems: MenuItemType[];
-  setMenuItems: (items: MenuItemType[]) => void;
-  pages: Page[];
-  usedPageIds: string[];
+    subItem: SubMenuItem;
+    parentId: string;
+    menuItems: MenuItemType[];
+    setMenuItems: (items: MenuItemType[]) => void;
+    pages: Page[];
+    usedPageIds: string[];
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: subItem.id });
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+        useSortable({ id: subItem.id });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
 
-  // 🟢 Normalize IDs to strings
-  const currentPageId = subItem.pageId ? String(subItem.pageId) : "";
+    // 🟢 Normalize IDs to strings
+    const currentPageId = subItem.pageId ? String(subItem.pageId) : "";
 
-  const handlePageSelect = (pageId: string) => {
-    const newItems = [...menuItems];
-    const parentItem = newItems.find((item) => item.id === parentId);
-    if (parentItem) {
-      const subItemIndex = parentItem.subItems.findIndex(
-        (sub) => sub.id === subItem.id
-      );
-      if (subItemIndex !== -1) {
-        const selectedPage = pages.find((p) => String(p._id) === pageId);
-        parentItem.subItems[subItemIndex].pageId = pageId;
-        parentItem.subItems[subItemIndex].label = selectedPage?.pageName || "";
-        setMenuItems(newItems);
-      }
-    }
-  };
+    const handlePageSelect = (pageId: string) => {
+        const newItems = [...menuItems];
+        const parentItem = newItems.find((item) => item.id === parentId);
+        if (parentItem) {
+            const subItemIndex = parentItem.subItems.findIndex(
+                (sub) => sub.id === subItem.id
+            );
+            if (subItemIndex !== -1) {
+                const selectedPage = pages.find((p) => String(p._id) === pageId);
+                parentItem.subItems[subItemIndex].pageId = pageId;
+                parentItem.subItems[subItemIndex].label = selectedPage?.pageName || "";
+                setMenuItems(newItems);
+            }
+        }
+    };
 
-  const removeSubItem = () => {
-    const newItems = [...menuItems];
-    const parentItem = newItems.find((item) => item.id === parentId);
-    if (parentItem) {
-      parentItem.subItems = parentItem.subItems.filter(
-        (sub) => sub.id !== subItem.id
-      );
-      setMenuItems(newItems);
-    }
-  };
+    const removeSubItem = () => {
+        const newItems = [...menuItems];
+        const parentItem = newItems.find((item) => item.id === parentId);
+        if (parentItem) {
+            parentItem.subItems = parentItem.subItems.filter(
+                (sub) => sub.id !== subItem.id
+            );
+            setMenuItems(newItems);
+        }
+    };
 
-  const availablePages = pages.filter(
-    (page) => !usedPageIds.includes(String(page._id)) || String(page._id) === currentPageId
-  );
+    const availablePages = pages.filter(
+        (page) => !usedPageIds.includes(String(page._id)) || String(page._id) === currentPageId
+    );
 
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg ml-6 mb-2"
-    >
-      <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-        <GripVertical size={16} className="text-gray-400" />
-      </div>
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg ml-6 mb-2"
+        >
+            <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+                <GripVertical size={16} className="text-gray-400" />
+            </div>
 
-      <select
-        value={currentPageId}
-        onChange={(e) => handlePageSelect(e.target.value)}
-        className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Select a page...</option>
-        {availablePages.map((page) => (
-          <option key={String(page._id)} value={String(page._id)}>
-            {page.pageName}
-          </option>
-        ))}
-      </select>
+            <select
+                value={currentPageId}
+                onChange={(e) => handlePageSelect(e.target.value)}
+                className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+                <option value="">Select a page...</option>
+                {availablePages.map((page) => (
+                    <option key={String(page._id)} value={String(page._id)}>
+                        {page.pageName}
+                    </option>
+                ))}
+            </select>
 
-      <button
-        onClick={removeSubItem}
-        className="flex items-center gap-1 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-        title="Remove Sub Item"
-      >
-        <Trash2 size={16} />
-      </button>
-    </div>
-  );
+            <button
+                onClick={removeSubItem}
+                className="flex items-center gap-1 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                title="Remove Sub Item"
+            >
+                <Trash2 size={16} />
+            </button>
+        </div>
+    );
 }
 
 // Sortable Menu Item Component
@@ -495,13 +495,12 @@ export default function MenuBuilder() {
         try {
             let response;
             if (editingMenu) {
-                response = await fetch("/api/admin/menus", {
+                response = await fetch(`/api/admin/menus/${editingMenu._id}`, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        id: editingMenu._id,
                         name: menuName,
                         items: menuItems
                     })
@@ -540,11 +539,27 @@ export default function MenuBuilder() {
     };
 
     const editMenu = (menu: Menu) => {
+        // normalize pageId to string for items & subItems
+        const normalizedItems = menu.items.map((item) => ({
+            ...item,
+            pageId:
+                typeof item.pageId === "object" && item.pageId !== null
+                    ? (item.pageId as any)._id
+                    : item.pageId || "",
+            subItems: item.subItems.map((sub) => ({
+                ...sub,
+                pageId:
+                    typeof sub.pageId === "object" && sub.pageId !== null
+                        ? (sub.pageId as any)._id
+                        : sub.pageId || "",
+            })),
+        }));
+
         setEditingMenu(menu);
-        setMenuName(menu?.name);
-        setMenuItems(menu?.items);
-        console.log(menu?.items)
+        setMenuName(menu.name);
+        setMenuItems(normalizedItems);
     };
+
 
     const deleteMenu = async (menuId: string) => {
         if (!confirm("Are you sure you want to delete this menu?")) return;
@@ -695,7 +710,7 @@ export default function MenuBuilder() {
                                         </p>
                                     </div>
                                     <div className="flex gap-2">
-                                    <MenuTypeDropdown menuId={menu._id} currentType={menu.menuType} />
+                                        <MenuTypeDropdown menuId={menu._id} currentType={menu.menuType} />
                                         <button
                                             onClick={() => editMenu(menu)}
                                             className="flex items-center gap-1 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"

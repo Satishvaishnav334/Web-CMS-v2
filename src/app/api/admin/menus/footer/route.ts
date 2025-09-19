@@ -13,8 +13,8 @@ export async function GET(req: Request) {
 
     if (!menu) {
       return NextResponse.json(
-        { success: false, message: "Navbar menu not found" },
-        { status: 404 }
+        { success: true, message: "Navbar menu not found" },
+        { status: 200 }
       );
     }
 

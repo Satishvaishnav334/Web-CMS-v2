@@ -8,13 +8,12 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   return new Response(JSON.stringify({ menus }));
 }
 
-
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const id = params.id;
 
   try {
     await connectDB();
-    const { menuType } = await req.json();
+    const { name, items } = await req.json();
 
     if (!id) {
       return NextResponse.json(
@@ -23,18 +22,24 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       );
     }
 
-    // ✅ If setting this menu as navbar/footer, clear previous menu of same type
-    if (menuType === "navbar" || menuType === "footer") {
-      await Menu.updateMany(
-        { menuType }, // all menus of this type
-        { $set: { menuType: null } } // reset them
-      );
-    }
+    // ✅ Clean items (remove _id, fix empty pageId)
+    const cleanItems = (items || []).map((item: any) => ({
+      id: item.id,
+      label: item.label,
+      type: item.type,
+      pageId: item.pageId && item.pageId !== "" ? item.pageId : undefined,
+      subItems: (item.subItems || []).map((sub: any) => ({
+        id: sub.id,
+        label: sub.label,
+        pageId: sub.pageId && sub.pageId !== "" ? sub.pageId : undefined,
+      })),
+    }));
 
+    // ✅ Update only name & items, keep existing menuType untouched
     const menu = await Menu.findByIdAndUpdate(
       id,
-      { menuType },
-      { new: true }
+      { name: name?.trim(), items: cleanItems },
+      { new: true, runValidators: true }
     );
 
     if (!menu) {
@@ -53,6 +58,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     );
   }
 }
+
+
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   await Menu.findByIdAndDelete(params.id);

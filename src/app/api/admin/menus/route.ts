@@ -29,7 +29,6 @@ export async function POST(req: Request) {
       items: items || [],
       menuType: menuType || "none"
     });
-    console.log(menu)
     return NextResponse.json({ success: true, menu });
   } catch (error) {
     console.error("Error creating menu:", error);
@@ -55,40 +54,7 @@ export async function GET() {
   }
 }
 
-export async function PUT(req: Request) {
-  try {
-    await connectDB();
-    const { id, name, items } = await req.json();
-    
-    if (!id) {
-      return NextResponse.json(
-        { success: false, message: "Menu ID is required" },
-        { status: 400 }
-      );
-    }
 
-    const menu = await Menu.findByIdAndUpdate(
-      id,
-      { name: name?.trim(), items },
-      { new: true, runValidators: true }
-    );
-
-    if (!menu) {
-      return NextResponse.json(
-        { success: false, message: "Menu not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ success: true, menu });
-  } catch (error) {
-    console.error("Error updating menu:", error);
-    return NextResponse.json(
-      { success: false, message: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
 
 export async function DELETE(req: Request) {
   try {

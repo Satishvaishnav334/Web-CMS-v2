@@ -16,6 +16,7 @@ interface MenuItem {
 
 interface Menu extends Document {
   name: string;
+  isActive: boolean;
   items: MenuItem[];
 }
 
@@ -37,6 +38,7 @@ const MenuSchema = new Schema<Menu>(
   {
     name: { type: String, required: true },
     items: [MenuItemSchema],
+    isActive: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

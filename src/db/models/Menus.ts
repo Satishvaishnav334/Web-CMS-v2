@@ -16,7 +16,7 @@ interface MenuItem {
 
 interface Menu extends Document {
   name: string;
-  isActive: boolean;
+  menuType: "footer" | "navbar" | "none";
   items: MenuItem[];
 }
 
@@ -38,7 +38,7 @@ const MenuSchema = new Schema<Menu>(
   {
     name: { type: String, required: true },
     items: [MenuItemSchema],
-    isActive: { type: Boolean, default: false },
+    menuType: { type: String, enum: ["footer", "navbar","none"], default: "none" },
   },
   { timestamps: true }
 );

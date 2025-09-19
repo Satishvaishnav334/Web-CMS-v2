@@ -6,7 +6,7 @@ import  Menu  from "@/db/models/Menus";
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { name, items } = await req.json();
+    const { name, items,menuType } = await req.json();
     
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -26,9 +26,10 @@ export async function POST(req: Request) {
 
     const menu = await Menu.create({
       name: name.trim(),
-      items: items || []
+      items: items || [],
+      menuType: menuType || "none"
     });
-
+    console.log(menu)
     return NextResponse.json({ success: true, menu });
   } catch (error) {
     console.error("Error creating menu:", error);

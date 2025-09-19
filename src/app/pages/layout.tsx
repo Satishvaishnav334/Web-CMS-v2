@@ -5,7 +5,7 @@ import { getCookie } from "cookies-next/client";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Navbar from "@/components/Navbar";
-
+import Footer from '@/components/Footer'
 // Define menu type (adjust fields based on your schema)
 interface SubItem {
   label: string;
@@ -32,17 +32,20 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   const [menu, setMenu] = useState<ActiveMenu | null>(null);
+  const [menu2, setMenu2] = useState<ActiveMenu | null>(null);
   const router = useRouter();
 
   const getMenu = async () => {
     try {
-      const res = await axios.get<{ menu: ActiveMenu }>("/api/admin/menus/activeMenu");
+      const res = await axios.get<{ menu: ActiveMenu }>("/api/admin/menus/navbar");
+      const res2 = await axios.get<{ menu: ActiveMenu }>("/api/admin/menus/footer");
+      setMenu2(res2.data.menu);
       setMenu(res.data.menu);
     } catch (error) {
       console.error("Error fetching menu:", error);
     }
   };
-
+  console.log(menu)
   useEffect(() => {
     getMenu();
 
@@ -60,9 +63,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
   }, [router]);
   
   return (
-    <>
+    <div className="min-h-screen flex flex-col justify-between items-between">
       <Navbar links={menu?.items || []} />
       {children}
-    </>
+      <Footer links={menu2?.items || []} />
+    </div>
   );
 }

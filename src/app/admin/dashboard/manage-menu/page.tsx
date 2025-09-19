@@ -25,7 +25,7 @@ import {
     ChevronDown,
     Link,
 } from "lucide-react";
-
+import MenuTypeDropdown from "@/components/ui/MenuType";
 // Types
 interface Page {
     _id: string;
@@ -48,6 +48,7 @@ interface MenuItemType {
 
 interface Menu {
     _id: string;
+    menuType:string;
     name: string;
     items: MenuItemType[];
     createdAt: string;
@@ -693,8 +694,8 @@ export default function MenuBuilder() {
                                             {menu.items.length} items • Created {new Date(menu.createdAt).toLocaleDateString()}
                                         </p>
                                     </div>
-
                                     <div className="flex gap-2">
+                                    <MenuTypeDropdown menuId={menu._id} currentType={menu.menuType} />
                                         <button
                                             onClick={() => editMenu(menu)}
                                             className="flex items-center gap-1 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"

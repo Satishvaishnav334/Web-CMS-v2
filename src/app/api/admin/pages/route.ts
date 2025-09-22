@@ -65,9 +65,9 @@ export async function GET() {
     if (!pages || pages.length === 0) {
       return NextResponse.json({ error: "No pages found" }, { status:200 });
     }
-
-    return NextResponse.json(pages);
+    return NextResponse.json({ pages}, { status:200 });
   } catch (error) {
+    console.log(error)
     return NextResponse.json(
       { error: "Error fetching pages" },
       { status: 500 }

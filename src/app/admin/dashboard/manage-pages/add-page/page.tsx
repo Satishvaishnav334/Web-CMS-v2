@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import StudioEditor from "@grapesjs/studio-sdk/react";
 import "@grapesjs/studio-sdk/style";
-import studio from '@grapesjs/studio-sdk';
+import studio  from '@grapesjs/studio-sdk';
 import 'grapesjs/dist/css/grapes.min.css';
 import 'grapesjs-component-code-editor/dist/grapesjs-component-code-editor.min.css';
 import 'grapesjs-component-code-editor';
@@ -21,9 +21,9 @@ export default function AddPage() {
     const [showEditor, setShowEditor] = useState(false);
     const [slugEdited, setSlugEdited] = useState(false);
     const [editorKey, setEditorKey] = useState(0);
-  
-    useEffect(() => {
 
+    // Auto-fill slug
+    useEffect(() => {
         if (!slugEdited && pageName) {
             setSlug(pageName.toLowerCase().replace(/\s+/g, "-"));
         }
@@ -31,7 +31,6 @@ export default function AddPage() {
 
     // Initialize editor once when opening StudioEditor
     useEffect(() => {
-       
         if (editorRef.current) {
             const editor = editorRef.current;
 
@@ -77,7 +76,6 @@ export default function AddPage() {
             // Reset editor UI and force remount
             setShowEditor(false);
             setEditorKey(prev => prev + 1);
-            console.log(editorRef.current)
 
             // Redirect
             router.push("/admin/dashboard/manage-pages");

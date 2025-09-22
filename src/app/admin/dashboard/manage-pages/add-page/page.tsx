@@ -1,104 +1,58 @@
-"use client";
-import axios from "axios";
-import { useEffect, useRef, useState } from "react";
-import grapesjs, { Editor } from "grapesjs";
-import "grapesjs/dist/css/grapes.min.css";
+'use client';
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import StudioEditor from "@grapesjs/studio-sdk/react";
+import "@grapesjs/studio-sdk/style";
+import studio from '@grapesjs/studio-sdk';
+import 'grapesjs/dist/css/grapes.min.css';
+import 'grapesjs-component-code-editor/dist/grapesjs-component-code-editor.min.css';
+import 'grapesjs-component-code-editor';
 
 export default function AddPage() {
-    const editorRef = useRef<Editor | null>(null);
-    const editorContainerRef = useRef<HTMLDivElement | null>(null);
+    const editorRef = useRef<any>(null);
     const router = useRouter();
 
-    // Form state
     const [pageName, setPageName] = useState("");
     const [pageslug, setSlug] = useState("");
     const [seoTitle, setSeoTitle] = useState("");
     const [seoDescription, setSeoDescription] = useState("");
     const [seoKeywords, setSeoKeywords] = useState("");
     const [status, setStatus] = useState("draft");
-
     const [showEditor, setShowEditor] = useState(false);
-
-    // Init GrapesJS when editor opens
+    const [slugEdited, setSlugEdited] = useState(false);
+    const [editorKey, setEditorKey] = useState(0);
+  
     useEffect(() => {
-        if (showEditor && editorContainerRef.current && !editorRef.current) {
-            const loadEditor = async () => {
-                const gjsPresetWebpage = (await import("grapesjs-preset-webpage")).default;
-                const gjsBlocksBasic = (await import("grapesjs-blocks-basic")).default;
-                const gjsForms = (await import("grapesjs-plugin-forms")).default;
-                const gjsNavbar = (await import("grapesjs-navbar")).default;
-                const gjsGradient = (await import("grapesjs-style-gradient")).default;
-                const gjsExport = (await import("grapesjs-plugin-export")).default;
 
-                const editor = grapesjs.init({
-                    container: editorContainerRef.current,
-                    height: "100%",
-                    width: "100%",
-                    storageManager: { type: "local", autosave: false, autoload: false },
-                    plugins: [gjsPresetWebpage, gjsBlocksBasic, gjsForms, gjsNavbar, gjsGradient, gjsExport],
-                    panels: { defaults: [] }, // clear default so we control toolbar
-                });
+        if (!slugEdited && pageName) {
+            setSlug(pageName.toLowerCase().replace(/\s+/g, "-"));
+        }
+    }, [pageName, slugEdited]);
 
-                // ✅ Add "open code" buttons for HTML & CSS
-                editor.Panels.addButton("options", [
-                    {
-                        id: "open-html",
-                        className: "fa fa-code",
-                        command: "open-html",
-                        attributes: { title: "Edit HTML" },
-                    },
-                    {
-                        id: "open-css",
-                        className: "fa fa-paint-brush",
-                        command: "open-css",
-                        attributes: { title: "Edit CSS" },
-                    },
-                ]);
+    // Initialize editor once when opening StudioEditor
+    useEffect(() => {
+       
+        if (editorRef.current) {
+            const editor = editorRef.current;
 
-                // ✅ Command: Edit HTML
-                editor.Commands.add("open-html", {
-                    run(editor) {
-                        const html = editor.getHtml();
-                        const css = editor.getCss();
-
-                        const newHtml = prompt("Edit HTML:", html);
-                        if (newHtml !== null) {
-                            editor.setComponents(newHtml);
-                        }
-                    },
-                });
-
-                // ✅ Command: Edit CSS
-                editor.Commands.add("open-css", {
-                    run(editor) {
-                        const css = editor.getCss();
-                        const newCss = prompt("Edit CSS:", css);
-                        if (newCss !== null) {
-                            editor.setStyle(newCss);
-                        }
-                    },
-                });
-
-
-                editorRef.current = editor;
-            };
-
-            loadEditor();
+            // Remove Pages panel if it exists
+            editor.Panels.removePanel('views');
+            editor.Panels.removePanel('pages-panel');
         }
     }, [showEditor]);
 
     const handleSave = async (publish: boolean = false) => {
-        const html = editorRef.current ? editorRef.current.getHtml() : "";
-        const css = editorRef.current ? editorRef.current.getCss() : "";
-        const json = editorRef.current ? editorRef.current.getComponents().toJSON() : null;
+        const editor = editorRef.current;
+        const html = editor ? editor.getHtml() : "";
+        const css = editor ? editor.getCss() : "";
+        const json = editor ? editor.getComponents().toJSON() : null;
 
         const pageData = {
             pageName,
-            slug: pageslug || pageName.toLowerCase().replace(/\s+/g, "-"),
+            slug: pageslug,
             seoTitle,
             seoDescription,
-            seoKeywords: seoKeywords.split(",").map((s) => s.trim()).filter(Boolean),
+            seoKeywords: seoKeywords.split(",").map(s => s.trim()).filter(Boolean),
             html,
             css,
             json,
@@ -113,28 +67,40 @@ export default function AddPage() {
             });
         } catch (err) {
             console.error("Error saving page:", err);
-        }
-        finally {
-            router.push("/admin/dashboard/manage-pages"); // redirect if saving from form only
+        } finally {
+            // Destroy editor
+            if (editorRef.current) {
+                editorRef.current.destroy();
+                editorRef.current = null;
+            }
 
+            // Reset editor UI and force remount
+            setShowEditor(false);
+            setEditorKey(prev => prev + 1);
+            console.log(editorRef.current)
+
+            // Redirect
+            router.push("/admin/dashboard/manage-pages");
         }
     };
 
     return (
-        <div className="h-screen flex flex-col bg-gray-50">
-            {/* Navbar always visible */}
-            <div className="flex justify-between items-center px-6 py-3 border-b bg-gray-900 text-white">
+        <div className="h-screen flex flex-col bg-gray-100">
+            {/* Navbar */}
+            <div className="flex justify-between items-center px-6 py-3 border-b bg-gray-900 text-white shadow">
                 <h2 className="font-semibold text-lg">{pageName || "New Page"}</h2>
                 <div className="flex gap-3">
                     <button
                         onClick={() => handleSave()}
-                        className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded"
+                        className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded disabled:opacity-50"
+                        disabled={!pageName || !pageslug}
                     >
                         Save Draft
                     </button>
                     <button
                         onClick={() => handleSave(true)}
-                        className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded"
+                        className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded disabled:opacity-50"
+                        disabled={!pageName || !pageslug}
                     >
                         Publish
                     </button>
@@ -149,76 +115,108 @@ export default function AddPage() {
                 </div>
             </div>
 
-            {/* Form only */}
+            {/* Form view */}
             {!showEditor && (
-                <div className="flex-1 overflow-y-auto p-6">
-                    <form className="grid grid-cols-2 gap-4 bg-white p-6 rounded-xl shadow-md">
-                        <div className="flex flex-col">
-                            <label className="text-sm font-semibold">Page Name</label>
-                            <input
-                                type="text"
-                                value={pageName}
-                                onChange={(e) => setPageName(e.target.value)}
-                                className="border p-2 rounded"
-                                required
-                            />
+                <div className="flex-1 overflow-y-auto p-8 flex justify-center">
+                    <div className="w-full max-w-3xl bg-white p-8 rounded-2xl shadow-lg">
+                        <h3 className="text-xl font-semibold mb-6">Page Details</h3>
+                        <form className="grid grid-cols-2 gap-6">
+                            <div className="flex flex-col">
+                                <label className="text-sm font-semibold mb-1">Page Name</label>
+                                <input
+                                    type="text"
+                                    value={pageName}
+                                    onChange={(e) => { setPageName(e.target.value); setSlugEdited(false); }}
+                                    className="border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="Enter page name"
+                                    required
+                                />
+                            </div>
+                            <div className="flex flex-col">
+                                <label className="text-sm font-semibold mb-1">Slug</label>
+                                <input
+                                    type="text"
+                                    value={pageslug}
+                                    onChange={(e) => { setSlug(e.target.value); setSlugEdited(true); }}
+                                    className="border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="auto-generated or custom slug"
+                                    required
+                                />
+                            </div>
+                            <div className="flex flex-col">
+                                <label className="text-sm font-semibold mb-1">SEO Title</label>
+                                <input
+                                    type="text"
+                                    value={seoTitle}
+                                    onChange={(e) => setSeoTitle(e.target.value)}
+                                    className="border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="SEO-friendly title"
+                                />
+                            </div>
+                            <div className="flex flex-col col-span-2">
+                                <label className="text-sm font-semibold mb-1">SEO Description</label>
+                                <textarea
+                                    value={seoDescription}
+                                    onChange={(e) => setSeoDescription(e.target.value)}
+                                    className="border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    rows={3}
+                                    placeholder="Meta description for SEO"
+                                />
+                            </div>
+                            <div className="flex flex-col col-span-2">
+                                <label className="text-sm font-semibold mb-1">SEO Keywords</label>
+                                <input
+                                    type="text"
+                                    value={seoKeywords}
+                                    onChange={(e) => setSeoKeywords(e.target.value)}
+                                    className="border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="comma, separated, keywords"
+                                />
+                            </div>
+                        </form>
+                        <div className="mt-8 text-center">
+                            <button
+                                type="button"
+                                onClick={() => setShowEditor(true)}
+                                disabled={!pageName || !pageslug}
+                                className="bg-indigo-600 hover:bg-indigo-700 transition text-white font-bold py-4 px-12 rounded-xl shadow-lg text-lg disabled:opacity-50"
+                            >
+                                Open Fullscreen Code Editor
+                            </button>
+                            {!pageName || !pageslug && (
+                                <p className="text-sm text-red-500 mt-2">
+                                    Enter Page Name and Slug before opening editor
+                                </p>
+                            )}
                         </div>
-
-                        <div className="flex flex-col">
-                            <label className="text-sm font-semibold">Slug</label>
-                            <input
-                                type="text"
-                                value={pageslug}
-                                onChange={(e) => setSlug(e.target.value)}
-                                className="border p-2 rounded"
-                            />
-                        </div>
-
-                        <div className="flex flex-col">
-                            <label className="text-sm font-semibold">SEO Title</label>
-                            <input
-                                type="text"
-                                value={seoTitle}
-                                onChange={(e) => setSeoTitle(e.target.value)}
-                                className="border p-2 rounded"
-                            />
-                        </div>
-
-                        <div className="flex flex-col">
-                            <label className="text-sm font-semibold">SEO Description</label>
-                            <textarea
-                                value={seoDescription}
-                                onChange={(e) => setSeoDescription(e.target.value)}
-                                className="border p-2 rounded"
-                            />
-                        </div>
-
-                        <div className="flex flex-col col-span-2">
-                            <label className="text-sm font-semibold">SEO Keywords</label>
-                            <input
-                                type="text"
-                                value={seoKeywords}
-                                onChange={(e) => setSeoKeywords(e.target.value)}
-                                className="border p-2 rounded"
-                            />
-                        </div>
-                    </form>
-
-                    {/* Big button to open editor */}
-                    <button
-                        type="button"
-                        onClick={() => setShowEditor(true)}
-                        className="mt-6 bg-indigo-600 hover:bg-indigo-700 transition text-white font-bold py-5 px-10 rounded-xl shadow-xl text-lg w-fit mx-auto"
-                    >
-                        Open Fullscreen Code Editor
-                    </button>
+                    </div>
                 </div>
             )}
 
-            {/* Fullscreen editor */}
+            {/* Fullscreen Studio Editor */}
             {showEditor && (
                 <div className="flex-1 w-full">
-                    <div ref={editorContainerRef} className="w-full h-full" />
+                    <StudioEditor
+                        key={editorKey}
+                        onEditor={(editor) => {
+                            editorRef.current = editor;
+                        }}
+                        options={{
+                            project: { type: "web" },
+                            modules: ['blocks', 'selector-manager', 'style-manager', 'trait-manager'], // remove 'pages'
+                            plugins: ['grapesjs-component-code-editor'],
+                            pluginsOpts: {
+                                'grapesjs-component-code-editor': {
+                                    panel: {
+                                        buttons: [
+                                            { attributes: { title: 'Open Code Editor' }, className: 'fa fa-code', command: 'open-code' }
+                                        ],
+                                    },
+                                },
+                            },
+                            pages: false, // ⚠ important: explicitly disable pages
+                        }}
+                    />
                 </div>
             )}
         </div>

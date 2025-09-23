@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Edit2, Plus, Eye } from "lucide-react";
 import DashboardCard from "@/components/ui/Card";
+import { usePageContext } from "@/components/context/PageContext";
 import axios from "axios";
 interface Page {
   _id: string;
@@ -17,31 +18,30 @@ interface Page {
 }
 
 export default function CMSDashboard() {
-  const [pages, setPages] = useState<Page[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [menus, setMenus] = useState<Page[]>([]);
-  const [footer, setFooter] = useState()
-  const [navbar, setNavbar] = useState()
-
+  // const [pages, setPages] = useState<Page[]>([]);
+  // const [menus, setMenus] = useState([]);
+  const [livepage, setLivePages] = useState<Page[]>([]);
+  const {loading, pages, livePages, menus} = usePageContext()
   const router = useRouter();
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get("/api/admin/pages");
-      setPages(res.data.pages);
-      const res2 = await axios.get('/api/admin/menus')
-      setMenus(res2.data.menus)
-    } catch (err) {
-      console.error("Error fetching pages:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const fetchData = async () => {
+  //   setLoading(true)
+  //   try {
+  //     const res = await axios.get("/api/admin/pages");
+  //     setPages(res.data.pages);
+  //     setLivePages(res.data.pages.filter(page=>page.status=="published"))
+  //     const res2 = await axios.get('/api/admin/menus')
+  //     setMenus(res2.data.menus)
+  //   } catch (err) {
+  //     console.error("Error fetching pages:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
 
   const deletePage = async (id: string) => {
     if (!confirm("Are you sure you want to delete this page?")) return;
@@ -50,7 +50,7 @@ export default function CMSDashboard() {
       const res = await fetch(`/api/admin/pages?id=${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        fetchData();
+        // fetchData();
         alert("Page deleted successfully");
       }
     } catch (err) {
@@ -60,14 +60,14 @@ export default function CMSDashboard() {
   };
   const stats = {
     totalPages: pages.length,
-    livePages: pages.filter((page)=>(page.status=="published")).length,
+    livePages: livePages.length,
     draftPages: pages.filter((page)=>(page.status=="draft")).length,
     menuCount: menus.length,
     navbarStyle: menus.find(menu => menu.menuType === "navbar")?.name || "Not set",
     footerStyle: menus.find(menu => menu.menuType === "footer")?.name || "Not set",
   };
   return (
-    <div className="p-6 flex-col flex gap-10 bg-gray-50 min-h-screen">
+    <div className="p-6 flex-col flex gap-10 bg-gray-50 ">
 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">CMS Dashboard</h1>
@@ -86,24 +86,21 @@ export default function CMSDashboard() {
         navbarStyle={stats.navbarStyle}
         footerStyle={stats.footerStyle}
       />
-      {loading ? (
-        <p>Loading pages...</p>
-      ) : pages?.length === 0 ? (
+      <h1 className="text-2xl font-semibold ">Live Pages</h1>
+      {pages?.length === 0 ? (
         <p className="text-gray-500">No pages found.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-          {pages?.map((page) => (
+          {livePages?.map((page) => (
             <div key={page?._id} className="bg-white rounded-lg shadow p-4 flex flex-col justify-between">
               <div>
                 <h2 className="text-lg font-semibold">{page?.pageName}</h2>
                 <p className="text-sm text-gray-500 mb-2">Slug: {page?.slug}</p>
                 <p className="text-sm text-gray-500 mb-2">Status: {page?.status}</p>
-                {page?.seoTitle && <p className="text-sm text-gray-500">SEO Title: {page?.seoTitle}</p>}
-                {page?.seoDescription && <p className="text-sm text-gray-500">SEO Desc: {page?.seoDescription}</p>}
-                {page?.seoKeywords?.length > 0 && (
-                  <p className="text-sm text-gray-500">SEO Keywords: {page?.seoKeywords.join(", ")}</p>
-                )}
+                <p className="text-sm text-gray-500">SEO Title: {page?.seoTitle ? page?.seoTitle : "Not set"}</p>
+               <p className="text-sm text-gray-500">SEO Desc: {page?.seoDescription ? page?.seoDescription : "Not set"}</p>
+                  <p className="text-sm text-gray-500">SEO Keywords: {page?.seoKeywords ? page?.seoKeywords.join(", ") : "Not set"}</p>
               </div>
 
               <div className="flex justify-end gap-2 mt-4">

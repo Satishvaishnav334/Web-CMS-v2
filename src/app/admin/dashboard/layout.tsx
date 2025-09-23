@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { getCookie } from "cookies-next/client";
 import { useRouter } from "next/navigation";
-import { PageProvider } from "@/components/context/PageContext";
+import { usePageContext } from "@/components/context/PageContext";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { LayoutDashboard, SquarePlus, Settings, Menu } from "lucide-react";
 import Link from "next/link";
@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import logo from '@/app/favicon.ico'
+import { Loader } from "@/components/ui/loader";
 interface RootLayoutProps {
   children: React.ReactNode;
 }
@@ -18,6 +19,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const { loading } = usePageContext()
   const links = [
     {
       label: "Dashboard",
@@ -48,20 +50,27 @@ export default function RootLayout({ children }: RootLayoutProps) {
       ),
     },
   ];
-  useEffect(() => {
-    const checkSession = () => {
-      const token = getCookie("token"); // ✅ check each time
-      if (!token) {
-        router.push("/admin/admin-login");
-      }
-    };
+  // useEffect(() => {
+  //   const checkSession = () => {
+  //     const token = getCookie("token"); // ✅ check each time
+  //     if (!token) {
+  //       router.push("/admin/admin-login");
+  //     }
+  //   };
 
-    checkSession();
-    const interval = setInterval(checkSession, 3000);
+  //   checkSession();
+  //   const interval = setInterval(checkSession, 3000);
 
-    return () => clearInterval(interval);
-  }, [router]);
-
+  //   return () => clearInterval(interval);
+  // }, [router]);
+    
+  if (loading) {
+    return(
+      <div className="w-full h-screen flex justify-center items-center bg-white ">
+      <Loader />
+    </div>
+    )
+  }
   return (
     <div
       className={cn(
@@ -98,9 +107,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </div>
         </SidebarBody>
       </Sidebar>
-      <div className="w-full h-screen bg-gray-300">
-        <PageProvider>{children}</PageProvider>
+
+      <div className="w-full min-h-screen overflow-auto bg-gray-300">
+        {children}
       </div>
+
     </div>
   )
 }

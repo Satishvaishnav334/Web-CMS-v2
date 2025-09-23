@@ -1,28 +1,77 @@
 "use client";
+import { createContext, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getCookie } from "cookies-next/client";
+import axios from "axios";
+import Router from "next/router";
+interface PageContextType {
+  loading: boolean;
+  setDataLoading: any;
+  pages: any[];
+  livePages: any[];
+  menus: any[];
+  fetchData: () => Promise<void>;
+}
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+const PageContext = createContext<PageContextType>({
+  loading: true,
+  setDataLoading: () => { },
+  pages: [],
+  livePages: [],
+  menus: [],
+  fetchData: async () => { },
+});
 
-type PageContextType = {
-  slug: string;
-  setSlug: (slug: string) => void;
-};
+export const PageProvider = ({ children }: { children: React.ReactNode }) => {
+  const router = useRouter();
 
-const PageContext = createContext<PageContextType | undefined>(undefined);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
 
-export const PageProvider = ({ children }: { children: ReactNode }) => {
-  const [slug, setSlug] = useState<string>("");
+  const [pages, setPages] = useState<any[]>([]);
+  const [livePages, setLivePages] = useState<any[]>([]);
+  const [menus, setMenus] = useState<any[]>([]);
+
+  // 🔹 Combined loading state
+  const loading = authLoading || dataLoading;
+
+  // 🔹 Check session once on mount
+  useEffect(() => {
+    const token = getCookie("token");
+    if (!token) {
+      router.replace("/admin/admin-login");
+    }
+    setAuthLoading(false);
+  }, [router]);
+
+  // 🔹 Fetch pages + menus
+  const fetchData = async () => {
+    setDataLoading(true);
+    try {
+      const res = await axios.get("/api/admin/pages");
+      setPages(res.data.pages);
+      setLivePages(res.data.pages.filter((page: any) => page.status === "published"));
+
+      const res2 = await axios.get("/api/admin/menus");
+      setMenus(res2.data.menus);
+    } catch (err) {
+      console.error("Error fetching pages/menus:", err);
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  
+  useEffect(() => {
+    fetchData();
+  }, []);
+
 
   return (
-    <PageContext.Provider value={{ slug, setSlug }}>
+    <PageContext.Provider value={{ loading, pages, livePages, menus, fetchData, setDataLoading }}>
       {children}
     </PageContext.Provider>
   );
 };
 
-export const usePageContext = () => {
-  const context = useContext(PageContext);
-  if (!context) {
-    throw new Error("usePageContext must be used inside PageProvider");
-  }
-  return context;
-};
+export const usePageContext = () => useContext(PageContext);

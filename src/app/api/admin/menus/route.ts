@@ -44,7 +44,7 @@ export async function GET() {
     await connectDB();
     const menus = await Menu.find().populate("items.pageId").populate("items.subItems.pageId");
     
-    return NextResponse.json({ success: true, menus });
+     return NextResponse.json({ menus}, { status:200 });
   } catch (error) {
     console.error("Error fetching menus:", error);
     return NextResponse.json(

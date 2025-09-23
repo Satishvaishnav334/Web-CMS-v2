@@ -71,25 +71,34 @@ export default function EditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pageData),
       });
+
       setPage({ ...page, ...pageData });
+
+      // 🔥 Clear editor content after successful save
+      if (editorRef) {
+        editorRef.DomComponents.clear(); // clear components (HTML)
+        editorRef.CssComposer.clear();   // clear styles (CSS)
+        editorRef.UndoManager.clear();   // clear undo/redo history
+      }
     } catch (err) {
       console.error("Error saving page:", err);
     } finally {
-      // destroy editor
+      // destroy editor completely
       if (editorRef) {
         editorRef.destroy();
         setEditorRef(null);
       }
       setShowEditor(false);
-      setEditorKey(prev => prev + 1);
+      setEditorKey(prev => prev + 1); // reinit with clean editor
       router.push("/admin/dashboard/manage-pages");
     }
   };
 
+
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-100">
       {/* Navbar */}
-      <div className="flex justify-between items-center px-6 py-3 border-b bg-gray-900 text-white">
+      <div className="flex justify-between items-center px-6 py-3 border-b bg-gray-900 text-white shadow">
         <h2 className="font-semibold text-lg">{pageName || "Untitled Page"}</h2>
         <div className="flex gap-3">
           <button
@@ -117,67 +126,73 @@ export default function EditPage() {
 
       {/* Form */}
       {!showEditor && (
-        <div className="flex-1 overflow-y-auto p-6">
-          <form className="grid grid-cols-2 gap-4 bg-white p-6 rounded-xl shadow-md">
-            <div className="flex flex-col">
-              <label className="text-sm font-semibold">Page Name</label>
-              <input
-                type="text"
-                value={pageName}
-                onChange={(e) => setPageName(e.target.value)}
-                className="border p-2 rounded"
-                required
-              />
-            </div>
+        <div className="flex-1 overflow-y-auto p-8 flex justify-center">
+          <div className="w-full max-w-3xl bg-white p-8 rounded-2xl shadow-lg">
+            <h3 className="text-xl font-semibold mb-6">Page Details</h3>
+            <form className="grid grid-cols-2 gap-6">
+              <div className="flex flex-col">
 
-            <div className="flex flex-col">
-              <label className="text-sm font-semibold">Slug</label>
-              <input
-                type="text"
-                value={pageslug}
-                onChange={(e) => setSlug(e.target.value)}
-                className="border p-2 rounded"
-              />
-            </div>
+                <label className="text-sm font-semibold">Page Name</label>
+                <input
+                  type="text"
+                  value={pageName}
+                  onChange={(e) => setPageName(e.target.value)}
+                  className="border p-2 rounded"
+                  required
+                />
+              </div>
 
-            <div className="flex flex-col">
-              <label className="text-sm font-semibold">SEO Title</label>
-              <input
-                type="text"
-                value={seoTitle}
-                onChange={(e) => setSeoTitle(e.target.value)}
-                className="border p-2 rounded"
-              />
-            </div>
+              <div className="flex flex-col">
+                <label className="text-sm font-semibold">Slug</label>
+                <input
+                  type="text"
+                  value={pageslug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  className="border p-2 rounded"
+                />
+              </div>
 
-            <div className="flex flex-col">
-              <label className="text-sm font-semibold">SEO Description</label>
-              <textarea
-                value={seoDescription}
-                onChange={(e) => setSeoDescription(e.target.value)}
-                className="border p-2 rounded"
-              />
-            </div>
+              <div className="flex flex-col">
+                <label className="text-sm font-semibold">SEO Title</label>
+                <input
+                  type="text"
+                  value={seoTitle}
+                  onChange={(e) => setSeoTitle(e.target.value)}
+                  className="border p-2 rounded"
+                />
+              </div>
 
-            <div className="flex flex-col col-span-2">
-              <label className="text-sm font-semibold">SEO Keywords</label>
-              <input
-                type="text"
-                value={seoKeywords}
-                onChange={(e) => setSeoKeywords(e.target.value)}
-                className="border p-2 rounded"
-              />
-            </div>
-          </form>
+              <div className="flex flex-col col-span-2">
+                <label className="text-sm font-semibold">SEO Description</label>
+                <textarea
+                  value={seoDescription}
+                  onChange={(e) => setSeoDescription(e.target.value)}
+                  className="border p-2 rounded"
+                />
+              </div>
 
-          {/* Open Editor */}
-          <button
-            type="button"
-            onClick={() => setShowEditor(true)}
-            className="mt-6 bg-indigo-600 hover:bg-indigo-700 transition text-white font-bold py-5 px-10 rounded-xl shadow-xl text-lg w-fit mx-auto"
-          >
-            Open Fullscreen Code Editor
-          </button>
+              <div className="flex flex-col col-span-2">
+                <label className="text-sm font-semibold">SEO Keywords</label>
+                <input
+                  type="text"
+                  value={seoKeywords}
+                  onChange={(e) => setSeoKeywords(e.target.value)}
+                  className="border p-2 rounded"
+                />
+              </div>
+            </form>
+             <div className="mt-8 text-center">
+            {/* Open Editor */}
+            <button
+              type="button"
+              onClick={() => setShowEditor(true)}
+              className="mt-6 bg-[#364153] hover:bg-[#525b69] transition text-white font-bold py-5 px-10 rounded-xl shadow-xl text-lg w-fit mx-auto"
+            >
+              Open Fullscreen Code Editor
+            </button>
+            </div>
+          </div>
+
         </div>
       )}
 

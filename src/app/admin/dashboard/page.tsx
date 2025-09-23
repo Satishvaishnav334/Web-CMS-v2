@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Edit2, Plus, Eye } from "lucide-react";
-
+import DashboardCard from "@/components/ui/Card";
+import axios from "axios";
 interface Page {
   _id: string;
   pageName: string;
@@ -18,15 +19,19 @@ interface Page {
 export default function CMSDashboard() {
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(false);
+  const [menus, setMenus] = useState<Page[]>([]);
+  const [footer, setFooter] = useState()
+  const [navbar, setNavbar] = useState()
+
   const router = useRouter();
 
-  const fetchPages = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/pages");
-      const data = await res.json();
-      console.log(data)
-      setPages(data.pages);
+      const res = await axios.get("/api/admin/pages");
+      setPages(res.data.pages);
+      const res2 = await axios.get('/api/admin/menus')
+      setMenus(res2.data.menus)
     } catch (err) {
       console.error("Error fetching pages:", err);
     } finally {
@@ -35,7 +40,7 @@ export default function CMSDashboard() {
   };
 
   useEffect(() => {
-    fetchPages();
+    fetchData();
   }, []);
 
   const deletePage = async (id: string) => {
@@ -45,7 +50,7 @@ export default function CMSDashboard() {
       const res = await fetch(`/api/admin/pages?id=${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        fetchPages();
+        fetchData();
         alert("Page deleted successfully");
       }
     } catch (err) {
@@ -53,24 +58,41 @@ export default function CMSDashboard() {
       alert("Failed to delete page");
     }
   };
+  const stats = {
+    totalPages: pages.length,
+    livePages: pages.filter((page)=>(page.status=="published")).length,
+    draftPages: pages.filter((page)=>(page.status=="draft")).length,
+    menuCount: menus.length,
+    navbarStyle: menus.find(menu => menu.menuType === "navbar")?.name || "Not set",
+    footerStyle: menus.find(menu => menu.menuType === "footer")?.name || "Not set",
+  };
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 flex-col flex gap-10 bg-gray-50 min-h-screen">
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">CMS Dashboard</h1>
         <button
           onClick={() => router.push("/admin/dashboard/manage-pages/add-page")}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          className="flex items-center gap-2 bg-[#364153] hover:bg-[#525b69]    text-white px-4 py-2 rounded transition"
         >
           <Plus size={16} /> New Page
         </button>
       </div>
-
+      <DashboardCard
+        totalPages={stats.totalPages}
+        livePages={stats.livePages}
+        draftPages={stats.draftPages}
+        menuCount={stats.menuCount}
+        navbarStyle={stats.navbarStyle}
+        footerStyle={stats.footerStyle}
+      />
       {loading ? (
         <p>Loading pages...</p>
       ) : pages?.length === 0 ? (
         <p className="text-gray-500">No pages found.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
           {pages?.map((page) => (
             <div key={page?._id} className="bg-white rounded-lg shadow p-4 flex flex-col justify-between">
               <div>
@@ -87,7 +109,7 @@ export default function CMSDashboard() {
               <div className="flex justify-end gap-2 mt-4">
                 <button
                   onClick={() => router.push(`/admin/dashboard/manage-pages/edit/${page?.slug}`)}
-                  className="flex items-center gap-1 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+                  className="flex items-center gap-1 px-3 py-1 bg-[#364153] hover:bg-[#525b69]  text-white rounded  transition"
                 >
                   <Edit2 size={14} /> Edit
                 </button>
@@ -99,7 +121,7 @@ export default function CMSDashboard() {
                 </button>
                 <button
                   onClick={() => router.push(`/pages/${page?.slug}`)}
-                  className="flex items-center gap-1 px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+                  className="flex items-center gap-1 px-3 py-1 bg-gray-200 text-black rounded hover:bg-gray-300 transition"
                 >
                   <Eye size={14} /> View
                 </button>

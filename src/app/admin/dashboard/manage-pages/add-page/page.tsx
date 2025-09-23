@@ -3,13 +3,12 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import StudioEditor from "@grapesjs/studio-sdk/react";
 import "@grapesjs/studio-sdk/style";
-import studio  from '@grapesjs/studio-sdk';
 import 'grapesjs/dist/css/grapes.min.css';
 import 'grapesjs-component-code-editor/dist/grapesjs-component-code-editor.min.css';
 import 'grapesjs-component-code-editor';
 
 export default function AddPage() {
-    const editorRef = useRef<any>(null);
+    const neweditorRef = useRef<any>(null);
     const router = useRouter();
 
     const [pageName, setPageName] = useState("");
@@ -17,7 +16,6 @@ export default function AddPage() {
     const [seoTitle, setSeoTitle] = useState("");
     const [seoDescription, setSeoDescription] = useState("");
     const [seoKeywords, setSeoKeywords] = useState("");
-    const [status, setStatus] = useState("draft");
     const [showEditor, setShowEditor] = useState(false);
     const [slugEdited, setSlugEdited] = useState(false);
     const [editorKey, setEditorKey] = useState(0);
@@ -29,22 +27,11 @@ export default function AddPage() {
         }
     }, [pageName, slugEdited]);
 
-    // Initialize editor once when opening StudioEditor
-    useEffect(() => {
-        if (editorRef.current) {
-            const editor = editorRef.current;
-
-            // Remove Pages panel if it exists
-            editor.Panels.removePanel('views');
-            editor.Panels.removePanel('pages-panel');
-        }
-    }, [showEditor]);
-
     const handleSave = async (publish: boolean = false) => {
-        const editor = editorRef.current;
-        const html = editor ? editor.getHtml() : "";
-        const css = editor ? editor.getCss() : "";
-        const json = editor ? editor.getComponents().toJSON() : null;
+        const neweditor = neweditorRef.current;
+        const html = neweditor ? neweditor.getHtml() : "";
+        const css = neweditor ? neweditor.getCss() : "";
+        const json = neweditor ? neweditor.getComponents().toJSON() : null;
 
         const pageData = {
             pageName,
@@ -67,17 +54,12 @@ export default function AddPage() {
         } catch (err) {
             console.error("Error saving page:", err);
         } finally {
-            // Destroy editor
-            if (editorRef.current) {
-                editorRef.current.destroy();
-                editorRef.current = null;
+            if (neweditorRef.current) {
+                neweditorRef.current.destroy();
+                neweditorRef.current = null;
             }
-
-            // Reset editor UI and force remount
             setShowEditor(false);
             setEditorKey(prev => prev + 1);
-
-            // Redirect
             router.push("/admin/dashboard/manage-pages");
         }
     };
@@ -104,7 +86,14 @@ export default function AddPage() {
                     </button>
                     {showEditor && (
                         <button
-                            onClick={() => setShowEditor(false)}
+                            onClick={() => {
+                                if (neweditorRef.current) {
+                                    neweditorRef.current.destroy();
+                                    neweditorRef.current = null;
+                                }
+                                setShowEditor(false);
+                                setEditorKey(prev => prev + 1);
+                            }}
                             className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
                         >
                             Close Editor
@@ -175,9 +164,13 @@ export default function AddPage() {
                         <div className="mt-8 text-center">
                             <button
                                 type="button"
-                                onClick={() => setShowEditor(true)}
+                                onClick={() => {
+                                    // bump key so editor mounts fresh
+                                    setEditorKey(prev => prev + 1);
+                                    setShowEditor(true);
+                                }}
                                 disabled={!pageName || !pageslug}
-                                className="bg-indigo-600 hover:bg-indigo-700 transition text-white font-bold py-4 px-12 rounded-xl shadow-lg text-lg disabled:opacity-50"
+                                className="bg-[#364153] hover:bg-[#525b69] transition text-white font-bold py-4 px-12 rounded-xl shadow-lg text-lg disabled:opacity-50"
                             >
                                 Open Fullscreen Code Editor
                             </button>
@@ -197,24 +190,19 @@ export default function AddPage() {
                     <StudioEditor
                         key={editorKey}
                         onEditor={(editor) => {
-                            editorRef.current = editor;
+                            neweditorRef.current = editor;
+                            editor.setComponents('');
+                            editor.setStyle('');
                         }}
                         options={{
                             project: { type: "web" },
-                            modules: ['blocks', 'selector-manager', 'style-manager', 'trait-manager'], // remove 'pages'
-                            plugins: ['grapesjs-component-code-editor'],
-                            pluginsOpts: {
-                                'grapesjs-component-code-editor': {
-                                    panel: {
-                                        buttons: [
-                                            { attributes: { title: 'Open Code Editor' }, className: 'fa fa-code', command: 'open-code' }
-                                        ],
-                                    },
-                                },
-                            },
-                            pages: false, // ⚠ important: explicitly disable pages
+                            modules: ['blocks', 'selector-manager', 'style-manager', 'trait-manager'],
+                            // ❌ remove `grapesjs-component-code-editor`
+                            plugins: [],
+                            pages: false,
                         }}
                     />
+
                 </div>
             )}
         </div>

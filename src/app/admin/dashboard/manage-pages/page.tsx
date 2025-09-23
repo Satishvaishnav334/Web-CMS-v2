@@ -52,9 +52,9 @@ export default function PageDashboard() {
       <div className="mb-6 flex gap-2">
         <Link
           href="/admin/dashboard/manage-pages/add-page"
-          className="bg-blue-600 py-2 px-3 rounded-lg text-white"
+          className="bg-[#364153] hover:bg-[#525b69] py-2 px-3 text-xl rounded-lg text-white"
         >
-          Add New Page
+          New Page
         </Link>
       </div>
 
@@ -85,7 +85,7 @@ export default function PageDashboard() {
                       href={`/pages/${page.slug}`}
                       className="underline text-blue-600"
                     >
-                      Link
+                      Live Link
                     </Link>
                   )}
                 </td>
@@ -95,7 +95,7 @@ export default function PageDashboard() {
                 <td className="border border-gray-300 px-4 py-2 space-x-2">
                   <Link
                     href={`/admin/dashboard/manage-pages/edit/${page.slug}`}
-                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                    className="bg-[#364153] hover:bg-[#525b69] text-white px-3 py-2 rounded"
                     onClick={() => setSlug(page.slug)}
                   >
                     Update

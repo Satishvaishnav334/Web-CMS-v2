@@ -21,12 +21,15 @@ export default function MenuTypeDropdown({ menuId, currentType }: MenuTypeDropdo
         body: JSON.stringify({ menuType: newType }),
       });
       router.refresh()
+      window.location.reload()
       alert(`Menu updated successfully!`);
       const data = await res.json();
-
     } catch (error) {
       console.error("Error updating menu:", error);
-
+    }
+    finally{
+       router.refresh()
+      window.location.reload()
     }
   };
 

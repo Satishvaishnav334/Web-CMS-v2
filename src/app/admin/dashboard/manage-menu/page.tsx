@@ -2,6 +2,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner"
+import { usePageContext } from "@/components/context/PageContext";
 import {
     DndContext,
     closestCenter,
@@ -373,14 +375,15 @@ export default function MenuBuilder() {
     const [pages, setPages] = useState<Page[]>([]);
     const [existingMenus, setExistingMenus] = useState<Menu[]>([]);
     const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
-    const [loading, setLoading] = useState(false);
+    const {loading, setDataLoading} = usePageContext();
     const [error, setError] = useState("");
-
+    const router = useRouter()
     const sensors = useSensors(useSensor(PointerSensor));
 
     useEffect(() => {
         fetchPages();
         fetchMenus();
+
     }, []);
 
     const fetchPages = async () => {
@@ -490,7 +493,7 @@ export default function MenuBuilder() {
             return;
         }
 
-        setLoading(true);
+        setDataLoading(true);
         setError("");
 
         try {
@@ -506,6 +509,7 @@ export default function MenuBuilder() {
                         items: menuItems
                     })
                 });
+                toast.success("Menu Updated Successfully")
             } else {
                 response = await fetch("/api/admin/menus", {
                     method: "POST",
@@ -517,6 +521,8 @@ export default function MenuBuilder() {
                         items: menuItems
                     })
                 });
+                toast.success("Menu Created Successfully")
+
             }
 
             const data = await response.json();
@@ -530,12 +536,12 @@ export default function MenuBuilder() {
             setMenuItems([]);
             setEditingMenu(null);
             fetchMenus();
-            alert(`Menu ${editingMenu ? 'updated' : 'created'} successfully!`);
+           
         } catch (error: any) {
             console.error("Error saving menu:", error);
             setError(error.message || "Failed to save menu");
         } finally {
-            setLoading(false);
+            setDataLoading(false);
         }
     };
 
@@ -563,8 +569,8 @@ export default function MenuBuilder() {
 
 
     const deleteMenu = async (menuId: string) => {
-        if (!confirm("Are you sure you want to delete this menu?")) return;
         
+
         try {
             const response = await fetch(`/api/admin/menus?id=${menuId}`, {
                 method: "DELETE",
@@ -574,14 +580,14 @@ export default function MenuBuilder() {
 
             if (data.success) {
                 fetchMenus();
-                alert("Menu deleted successfully!");
+                toast.warning("Menu deleted successfully!");
             } else {
                 throw new Error(data.message);
             }
-            
+
         } catch (error: any) {
             console.error("Error deleting menu:", error);
-            alert("Failed to delete menu");
+            toast.warning("Failed to delete menu");
         }
     };
 
@@ -691,6 +697,10 @@ export default function MenuBuilder() {
                                 {loading ? "Saving..." : editingMenu ? "Update Menu" : "Save Menu"}
                             </button>
                         </div>
+                        <div className="py-5">
+
+                            <MenuTypeDropdown />
+                        </div>
                     </div>
                 </div>
 
@@ -711,8 +721,8 @@ export default function MenuBuilder() {
                                             {menu.items.length} items • Created {new Date(menu.createdAt).toLocaleDateString()}
                                         </p>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <MenuTypeDropdown menuId={menu._id} currentType={menu.menuType} />
+                                    <div className="flex gap-2 w-full">
+
                                         <button
                                             onClick={() => editMenu(menu)}
                                             className="flex items-center gap-1 px-3 py-1 bg-[#364153] hover:bg-[#525b69] text-white rounded  transition-colors"
@@ -727,6 +737,14 @@ export default function MenuBuilder() {
                                             <Trash2 size={14} />
                                             Delete
                                         </button>
+                                        <button
+                                            onClick={() => router.push(`/admin/dashboard/manage-menu/edit/${menu._id}`)}
+                                            className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                                        >
+                                            <Trash2 size={14} />
+                                           Style
+                                        </button>
+                                        
                                     </div>
                                 </li>
                             ))}

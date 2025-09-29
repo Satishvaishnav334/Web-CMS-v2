@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import { getCookie } from "cookies-next/client";
 import { useRouter } from "next/navigation";
 import { usePageContext } from "@/components/context/PageContext";
-import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import { LayoutDashboard, SquarePlus, Settings, Menu } from "lucide-react";
+import { Sidebar, SidebarBody, SidebarLink, SidebarLogout } from "@/components/ui/sidebar";
+import { LayoutDashboard, SquarePlus, Settings, Menu, LogOut } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -35,13 +35,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <SquarePlus className="text-gray-200 h-7 w-7 flex-shrink-0" />
       ),
     },
-    {
-      label: "Manage page",
-      href: "/admin/dashboard/manage-pages",
-      icon: (
-        <Settings className="text-gray-200 h-7 w-7 flex-shrink-0" />
-      ),
-    },
+
     {
       label: "Custtom Menu",
       href: "/admin/dashboard/manage-menu",
@@ -50,27 +44,35 @@ export default function RootLayout({ children }: RootLayoutProps) {
       ),
     },
   ];
-  // useEffect(() => {
-  //   const checkSession = () => {
-  //     const token = getCookie("token"); // ✅ check each time
-  //     if (!token) {
-  //       router.push("/admin/admin-login");
-  //     }
-  //   };
+  useEffect(() => {
+    const checkSession = () => {
+      const token = getCookie("token"); // ✅ check each time
+      if (!token) {
+        router.push("/admin/admin-login");
+      }
+    };
 
-  //   checkSession();
-  //   const interval = setInterval(checkSession, 3000);
+    checkSession();
+    const interval = setInterval(checkSession, 3000);
 
-  //   return () => clearInterval(interval);
-  // }, [router]);
-    
+    return () => clearInterval(interval);
+  }, [router]);
+
   if (loading) {
-    return(
+    return (
       <div className="w-full h-screen flex justify-center items-center bg-white ">
-      <Loader />
-    </div>
+        <Loader />
+      </div>
     )
   }
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log("object")
+    // Clear token and redirect
+    document.cookie =
+      "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    router.push("/admin/admin-login");
+  };
   return (
     <div
       className={cn(
@@ -87,28 +89,19 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 <SidebarLink key={idx} link={link} />
               ))}
             </div>
-          </div>
-          <div>
-            <SidebarLink
-              link={{
-                label: "Manu Arora",
-                href: "#",
-                icon: (
-                  <Image
-                    src={logo}
-                    className="h-7 w-7 flex-shrink-0 rounded-full"
-                    width={50}
-                    height={50}
-                    alt="Avatar"
-                  />
-                ),
-              }}
-            />
+
+            <SidebarLogout link={{
+              label: "Logout",
+              onclick:handleLogout,
+              icon: (
+                <LogOut className="text-gray-200 h-7 w-7 ml-1 flex-shrink-0" />
+              ),
+            }} />
           </div>
         </SidebarBody>
       </Sidebar>
 
-      <div className="w-full min-h-screen overflow-auto bg-gray-300">
+      <div className="w-full min-h-screen overflow-auto bg-gray-50">
         {children}
       </div>
 
@@ -119,7 +112,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 export const Logo = () => {
   return (
     <Link
-      href="#"
+      href="/admin/dashboard" 
       className=" flex space-x-2 items-center text-xl font-bold text-white py-1 relative z-20"
     >
       <div className="h-5 w-6  flex-shrink-0" >

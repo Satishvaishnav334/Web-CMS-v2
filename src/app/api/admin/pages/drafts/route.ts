@@ -6,7 +6,6 @@ import Page from "@/db/models/pages";
 
 export async function GET(
   req: Request,
-  { params }: { params: { slug: string } }
 ) {
   try {
     await connectDB();

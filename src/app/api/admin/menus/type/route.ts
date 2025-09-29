@@ -1,13 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextResponse,NextRequest } from "next/server";
 import connectDB from "@/lib/connect";
 import Menu from "@/db/models/Menus";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  const id = params.id;
+export async function PUT(
+  request: NextRequest,
+  
+)  {
 
   try {
     await connectDB();
-    const { menuType } = await req.json();
+    const { menuType,id } = await request.json();
     console.log(menuType)
     if (!id) {
       return NextResponse.json(

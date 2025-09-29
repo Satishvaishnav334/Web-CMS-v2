@@ -39,9 +39,9 @@ export async function POST(req: Request) {
     const page = await Page.create({
       slug,
       pageName,
-      html,
-      css,
-      json,
+      html: html ? html : "",
+      css: css ? css : "",
+      json: json ? json : "",
       status: status || "draft",
       seoTitle: seoTitle || "",
       seoDescription: seoDescription || "",
@@ -50,6 +50,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, page });
   } catch (error) {
+    console.log(error)
     return NextResponse.json(
       { success: false, message: "Failed to save page", error },
       { status: 500 }
@@ -63,9 +64,9 @@ export async function GET() {
     const pages = await Page.find();
 
     if (!pages || pages.length === 0) {
-      return NextResponse.json({ error: "No pages found" }, { status:200 });
+      return NextResponse.json({ error: "No pages found" }, { status: 200 });
     }
-    return NextResponse.json({ pages}, { status:200 });
+    return NextResponse.json({ pages }, { status: 200 });
   } catch (error) {
     console.log(error)
     return NextResponse.json(

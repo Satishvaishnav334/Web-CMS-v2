@@ -45,7 +45,7 @@ export default function Footer({ links = [] }: FooterProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <footer className="w-full bg-gray-900 text-white py-10 px-6">
+    <footer className="w-full bg-gray-900 text-white !mb-0 !py-10 !px-6">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-10">
         {/* Logo / Branding */}
         <div className="w-full md:w-1/3">
@@ -66,41 +66,39 @@ export default function Footer({ links = [] }: FooterProps) {
             return (
               <div key={item.id ?? item._id ?? index}>
                 {isDropdown ? (
-                  <div>
-                    <button
-                      type="button"
-                      className="flex items-center gap-2 font-semibold mb-2"
-                      onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                    >
-                      {item.label}
-                      
-                    </button>
-                    <ul
-                      className={`space-y-1 text-sm ${
-                        openIndex === index ? "block" : "block"
-                      }`}
-                    >
-                      {item.subItems?.map((sub, j) => (
-                        <li key={sub.id ?? sub._id ?? j}>
-                          <Link
-                            href={buildHref(sub.pageId)}
-                            className={`hover:underline ${
-                              pathname === buildHref(sub.pageId) ? "font-semibold" : ""
-                            }`}
-                          >
-                            {sub.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  
+                    <div className="flex flex-col">
+                      <button
+                        type="button"
+                        className=" !gap-5 font-semibold !mb-2"
+                        onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                      >
+                        {item.label}
+
+                      </button>
+                      <ul
+                        className={`!space-y-5 text-sm flex flex-col  `}
+                      >
+                        {item.subItems?.map((sub, j) => (
+                          <li key={sub.id ?? sub._id ?? j}>
+                            <Link
+                              href={buildHref(sub.pageId)}
+                              className={`hover:underline ${pathname === buildHref(sub.pageId) ? "font-semibold" : ""
+                                }`}
+                            >
+                              {sub.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                 
                 ) : (
                   <div>
                     <Link
                       href={href}
-                      className={`font-semibold hover:underline ${
-                        pathname === href ? "text-gray-200" : "text-gray-400"
-                      }`}
+                      className={`font-semibold hover:underline ${pathname === href ? "text-gray-200" : "text-gray-400"
+                        }`}
                     >
                       {item.label}
                     </Link>

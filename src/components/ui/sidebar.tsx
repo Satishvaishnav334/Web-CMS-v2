@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import Link, { LinkProps } from "next/link";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 
 interface Links {
   label: string;
@@ -135,12 +135,12 @@ export const MobileSidebar = ({
                 ease: "easeInOut",
               }}
               className={cn(
-                "fixed h-full w-full inset-0  p-10 z-[100] flex flex-col justify-between",
+                "fixed h-full w-full inset-0  p-10 z-[100] bg-gray-600 flex flex-col justify-between",
                 className
               )}
             >
               <div
-                className="absolute right-10 top-10 z-50 text-neutral-800  cursor-pointer"
+                className="absolute right-10 top-10 z-50 text-white  cursor-pointer"
                 onClick={() => setOpen(!open)}
               >
                 <X />
@@ -184,5 +184,38 @@ export const SidebarLink = ({
         {link.label}
       </motion.span>
     </Link>
+  );
+};
+
+export const SidebarLogout = ({
+  link,
+  className,
+  ...props
+}: {
+  link: any;
+  className?: string;
+  props?: LinkProps;
+}) => {
+  const { open, animate } = useSidebar();
+  return (
+    <button
+      onClick={link.onclick}
+      className={cn(
+        "flex items-center justify-start gap-2 group/sidebar py-2",
+        className
+      )}
+      {...props}
+    >
+      {link.icon}
+      <motion.span
+        animate={{
+          display: animate ? (open ? "inline-block" : "none") : "inline-block",
+          opacity: animate ? (open ? 1 : 0) : 1,
+        }}
+        className="text-white  text-lg font-semibold group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
+      >
+       {link.label}
+      </motion.span>
+    </button>
   );
 };

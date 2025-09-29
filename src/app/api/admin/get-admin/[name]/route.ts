@@ -4,19 +4,14 @@ import connectToDatabase from '@/lib/connect';
 import AdminModel from '@/db/models/Admin';
 import mongoose from 'mongoose';
 
-interface RouteParams {
-  params: {
-    name: string;
-  };
-}
-
-export async function GET(req: NextRequest, { params }: RouteParams) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ name: string; }>; } 
+){
   try {
+  const { params } = context; 
+  const { name } = await params; 
     await connectToDatabase();
-
-    // Extract name from dynamic route
-    const { name } = params;
-
     if (!name || typeof name !== 'string') {
       return NextResponse.json({ error: 'Invalid or missing name parameter' }, { status: 400 });
     }

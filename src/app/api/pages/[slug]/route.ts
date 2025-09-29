@@ -1,15 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextResponse,NextRequest } from "next/server";
 import connectDB from "@/lib/connect";
 import Page from "@/db/models/pages";
 
 
 export async function GET(
-  req: Request,
-  { params }: { params: { slug: string } }
-) {
+  request: NextRequest,
+  context: { params: Promise<{ slug: string; }>; }
+){
   try {
+        const { params } = context;
+    const { slug } = await params;
     await connectDB();
-    const page = await Page.findOne({ slug: params.slug });
+    const page = await Page.findOne({ slug});
 
     if (!page) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });

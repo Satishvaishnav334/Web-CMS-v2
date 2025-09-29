@@ -74,7 +74,6 @@ export default function EditPage() {
 
       setPage({ ...page, ...pageData });
 
-      // 🔥 Clear editor content after successful save
       if (editorRef) {
         editorRef.DomComponents.clear(); // clear components (HTML)
         editorRef.CssComposer.clear();   // clear styles (CSS)
@@ -83,14 +82,14 @@ export default function EditPage() {
     } catch (err) {
       console.error("Error saving page:", err);
     } finally {
-      // destroy editor completely
+      
       if (editorRef) {
         editorRef.destroy();
         setEditorRef(null);
       }
       setShowEditor(false);
       setEditorKey(prev => prev + 1); // reinit with clean editor
-      router.push("/admin/dashboard/manage-pages");
+      router.push("/admin/dashboard");
     }
   };
 
@@ -216,7 +215,7 @@ export default function EditPage() {
             }}
             options={{
               project: { type: "web" },
-              modules: ['blocks', 'selector-manager', 'style-manager', 'trait-manager'], // disable pages
+               modules: ['blocks', 'selector-manager', 'style-manager', 'trait-manager'], // disable pages
               plugins: ['grapesjs-component-code-editor'],
               pluginsOpts: {
                 'grapesjs-component-code-editor': {

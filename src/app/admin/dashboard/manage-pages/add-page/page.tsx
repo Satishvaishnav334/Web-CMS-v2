@@ -6,7 +6,8 @@ import "@grapesjs/studio-sdk/style";
 import 'grapesjs/dist/css/grapes.min.css';
 import 'grapesjs-component-code-editor/dist/grapesjs-component-code-editor.min.css';
 import 'grapesjs-component-code-editor';
-
+import { toast } from "sonner"
+import { usePageContext } from "@/components/context/PageContext";
 export default function AddPage() {
     const neweditorRef = useRef<any>(null);
     const router = useRouter();
@@ -19,7 +20,7 @@ export default function AddPage() {
     const [showEditor, setShowEditor] = useState(false);
     const [slugEdited, setSlugEdited] = useState(false);
     const [editorKey, setEditorKey] = useState(0);
-
+    const { setDataLoading } = usePageContext()
     // Auto-fill slug
     useEffect(() => {
         if (!slugEdited && pageName) {
@@ -28,6 +29,7 @@ export default function AddPage() {
     }, [pageName, slugEdited]);
 
     const handleSave = async (publish: boolean = false) => {
+        setDataLoading(true)
         const neweditor = neweditorRef.current;
         const html = neweditor ? neweditor.getHtml() : "";
         const css = neweditor ? neweditor.getCss() : "";
@@ -51,16 +53,18 @@ export default function AddPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(pageData),
             });
+            toast.success(`${pageName} Page Created Succesfully`)
         } catch (err) {
             console.error("Error saving page:", err);
         } finally {
+            setDataLoading(false)
             if (neweditorRef.current) {
                 neweditorRef.current.destroy();
                 neweditorRef.current = null;
             }
             setShowEditor(false);
             setEditorKey(prev => prev + 1);
-            router.push("/admin/dashboard/manage-pages");
+            router.push("/admin/dashboard");
         }
     };
 

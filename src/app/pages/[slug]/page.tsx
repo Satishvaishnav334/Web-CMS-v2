@@ -42,7 +42,7 @@ export default async function Page({ params }: PageProps) {
   return (
     <div className="w-full h-full">
       {/* Page Content */}
-      <div className="max-w-4xl mx-auto py-10">
+      <div className="w-full h-full">
         <style dangerouslySetInnerHTML={{ __html: page?.css || "" }} />
         <div dangerouslySetInnerHTML={{ __html: page?.html || "" }} />
       </div>

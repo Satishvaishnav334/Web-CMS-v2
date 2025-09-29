@@ -75,11 +75,11 @@ export default function Navbar({ links = [] }: NavbarProps) {
   };
 
   return (
-    <div className="w-full bg-white justify-end flex border-b border-black shadow-lg relative z-40">
-      <nav className="w-full p-3">
+    <div className="w-full fixed !top-0 min-h-20 justify-center  bg-white items-center flex border-b border-black shadow-lg z-40"  style={{ paddingLeft: 24, paddingRight: 24 }}>
+      <nav className="w-full ">
         <div className="flex justify-between items-center text-[#11111198]">
           {/* Logo */}
-          <div className="text-black w-[25%] lg:w-[40%]">
+          <div className="text-black w-[25%] flex   !p-5 lg:w-[40%]">
             <Link href="/">
               <h1 className="text-2xl lg:text-4xl font-extrabold md:m-2">
                 Web CMS 2.0
@@ -88,7 +88,7 @@ export default function Navbar({ links = [] }: NavbarProps) {
           </div>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex justify-end items-center w-[55%] lg:w-[56%] font-semibold lg:text-lg text-sm gap-10">
+          <div className="hidden md:flex justify-end items-center w-[55%] lg:w-[56%] font-semibold lg:text-lg text-sm  !px-5 gap-10">
             {links.map((item, index) => {
               const isDropdown = item.type === "dropdown";
               const href = buildHref(item.pageId);
@@ -104,7 +104,7 @@ export default function Navbar({ links = [] }: NavbarProps) {
                   <button
                     type="button"
                     className={
-                      "inline-flex items-center gap-2 cursor-pointer select-none " +
+                      "inline-flex items-center !gap-2 cursor-pointer select-none " +
                       (openIndex === index ? "text-black" : "hover:text-[#111111d1]")
                     }
                     onFocus={() => setOpenIndex(index)}
@@ -116,10 +116,11 @@ export default function Navbar({ links = [] }: NavbarProps) {
 
                   {/* Submenu */}
                   <div
-                    className={`absolute left-0 top-full mt-1 bg-white shadow-lg rounded-md py-1 min-w-[150px] z-50 ${
+                    className={`absolute !left-0 !top-16 !text-xl full mt-1 bg-white shadow-lg rounded-md py-1 min-w-[150px] z-50 ${
                       openIndex === index ? "block" : "hidden"
                     }`}
                     onMouseLeave={() => setOpenIndex(null)}
+                    style={{paddingLeft: 15, paddingRight: 15,paddingTop: 15, paddingBottom: 15}}
                   >
                     {item.subItems?.map((sub, j) => (
                       <Link
@@ -152,7 +153,8 @@ export default function Navbar({ links = [] }: NavbarProps) {
 
             <button
               onClick={() => Logout()}
-              className="py-2 px-4 bg-red-500 hover:bg-red-400 rounded-lg"
+              className="py-2 px-4 bg-red-500 hover:bg-red-400 text-white rounded-lg"
+               style={{ paddingLeft: 15, paddingRight: 15 ,paddingTop: 5, paddingBottom: 5}}
             >
               Logout
             </button>
@@ -169,21 +171,21 @@ export default function Navbar({ links = [] }: NavbarProps) {
 
           {/* Mobile Menu */}
           {isOpen && (
-            <div className="absolute top-16 right-2 bg-white z-50 m-2 shadow-lg rounded-lg p-4 w-56">
-              <div className="flex flex-col justify-between items-start my-2 font-semibold text-lg gap-4">
+            <div className="absolute !top-16 !right-2 bg-white z-50 !m-2 shadow-lg rounded-lg !p-4 !w-56">
+              <div className="flex flex-col justify-between items-start !my-2 font-semibold text-lg !gap-4">
                 {links.map((item, index) => {
                   const isDropdown = item.type === "dropdown";
                   const href = buildHref(item.pageId);
 
                   return isDropdown ? (
                     <div key={item.id ?? item._id ?? index} className="w-full">
-                      <span className="block py-2 font-semibold">{item.label}</span>
+                      <span className="block !py-2 font-semibold">{item.label}</span>
                       {item.subItems?.map((sub, j) => (
                         <Link
                           key={sub.id ?? sub._id ?? j}
                           href={buildHref(sub.pageId)}
                           onClick={() => setIsOpen(false)}
-                          className="block pl-4 py-1 text-sm hover:text-[#111111d1]"
+                          className="block !pl-4 !py-1 text-sm hover:text-[#111111d1]"
                         >
                           {sub.label}
                         </Link>

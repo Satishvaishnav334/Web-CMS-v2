@@ -1,100 +1,49 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import grapesjs, { Editor } from "grapesjs";
-import "grapesjs/dist/css/grapes.min.css";
-import { usePageContext } from "./context/PageContext";
+import React, { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
+import grapesjs from "grapesjs";
 
-export default function GrapesEditor() {
-  const editorRef = useRef<Editor | null>(null);
-  const editorContainerRef = useRef<HTMLDivElement | null>(null);
-  const { slug, setSlug } = usePageContext()
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadEditor = async () => {
-      const gjsPresetWebpage = (await import("grapesjs-preset-webpage")).default;
-      const gjsBlocksBasic = (await import("grapesjs-blocks-basic")).default;
-      const gjsForms = (await import("grapesjs-plugin-forms")).default;
-      const gjsNavbar = (await import("grapesjs-navbar")).default;
-      const gjsGradient = (await import("grapesjs-style-gradient")).default;
-      const gjsExport = (await import("grapesjs-plugin-export")).default;
-
-      if (isMounted && editorContainerRef.current && !editorRef.current) {
-        editorRef.current = grapesjs.init({
-          container: editorContainerRef.current,
-          height: "90vh",
-          width: "auto",
-          storageManager: {
-            type: "local",
-            autosave: true,
-            autoload: true,
-            stepsBeforeSave: 1,
-          },
-          plugins: [
-            gjsPresetWebpage,
-            gjsBlocksBasic,
-            gjsForms,
-            gjsNavbar,
-            gjsGradient,
-            gjsExport,
-          ],
-          pluginsOpts: {
-            "gjs-preset-webpage": {},
-            "gjs-blocks-basic": {},
-            "gjs-plugin-forms": {},
-            "gjs-navbar": {},
-            "gjs-style-gradient": {},
-            "gjs-plugin-export": {},
-          },
-        });
-      }
-    };
-
-    loadEditor();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const handleSave = async () => {
-    if (editorRef.current) {
-      const html = editorRef.current.getHtml();
-      const css = editorRef.current.getCss();
-      const json = editorRef.current.getComponents();
-      const pageData = {
-        slug: slug,
-        html,
-        css,
-        json: json,
-        status:"draft",
-      };
-      try {
-        await fetch("/api/admin/pages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(pageData),
-        });
-      }
-      catch(err){
-          console.log(err)
-      }
-    }
-  };
-
-  return (
-    <div className="flex flex-col h-screen">
-      <div ref={editorContainerRef} />
-      <div className="p-4 border-t flex justify-end bg-gray-100">
-        <button
-          onClick={handleSave}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Save Page
-        </button>
-      </div>
-    </div>
-
-  );
+interface StudioEditorProps {
+  onEditor?: (editor: any) => void;
+  options?: any;
+  initialHtml?: string;
+  initialCss?: string;
 }
+
+const StudioEditor = forwardRef<any, StudioEditorProps>(
+  ({ onEditor, options, initialHtml, initialCss }, ref) => {
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const editorRef = useRef<any>(null);
+
+    useEffect(() => {
+      if (!containerRef.current) return;
+
+      editorRef.current = grapesjs.init({
+        container: containerRef.current,
+        fromElement: false,
+        ...options,
+      });
+
+      if (initialHtml) editorRef.current.setComponents(initialHtml);
+      if (initialCss) editorRef.current.setStyle(initialCss);
+
+      if (onEditor) onEditor(editorRef.current);
+
+      return () => {
+        if (editorRef.current) {
+          editorRef.current.destroy();
+          editorRef.current = null;
+        }
+      };
+    }, []);
+
+    useImperativeHandle(ref, () => ({
+      getEditor: () => editorRef.current,
+    }));
+
+    return <div ref={containerRef} className="w-full h-[80vh]" />;
+  }
+);
+
+StudioEditor.displayName = "StudioEditor";
+export default StudioEditor;

@@ -13,13 +13,6 @@ interface SubItem {
   isActive?: boolean;
 }
 
-interface MenuItem {
-  label: string;
-  type: "link" | "dropdown";
-  slug?: string;
-  isActive?: boolean;
-  subItems?: SubItem[];
-}
 
 interface ActiveMenu {
   items: MenuItem[];
@@ -38,9 +31,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
   const getMenu = async () => {
     try {
       const res = await axios.get<{ menu: ActiveMenu }>("/api/admin/menus/navbar");
+      setMenu(res.data.menu);
       const res2 = await axios.get<{ menu: ActiveMenu }>("/api/admin/menus/footer");
       setMenu2(res2.data.menu);
-      setMenu(res.data.menu);
     } catch (error) {
       console.error("Error fetching menu:", error);
     }
@@ -61,12 +54,18 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
     return () => clearInterval(interval); // cleanup on unmount
   }, [router]);
-  
+
   return (
-    <div className="min-h-screen flex flex-col justify-between items-between">
-      <Navbar links={menu?.items || []} />
-      {children}
+    <div className="min-h-screen !p-0 !m-0 flex flex-col justify-between items-between">
+      <div className="">
+        <style dangerouslySetInnerHTML={{ __html: menu?.css || "" }} />
+        <div dangerouslySetInnerHTML={{ __html: menu?.html || "" }} />
+      </div>
+      <div className=" h-full w-full">
+        {children}
+      </div>
       <Footer links={menu2?.items || []} />
     </div>
   );
 }
+  

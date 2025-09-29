@@ -6,6 +6,8 @@ import axios from "axios";
 import Router from "next/router";
 interface PageContextType {
   loading: boolean;
+  slug:string;
+  setSlug:any;
   setDataLoading: any;
   pages: any[];
   livePages: any[];
@@ -14,8 +16,10 @@ interface PageContextType {
 }
 
 const PageContext = createContext<PageContextType>({
-  loading: true,
+  loading: false,
+  slug:"h",
   setDataLoading: () => { },
+  setSlug: () => { },
   pages: [],
   livePages: [],
   menus: [],
@@ -25,8 +29,9 @@ const PageContext = createContext<PageContextType>({
 export const PageProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
-  const [authLoading, setAuthLoading] = useState(true);
-  const [dataLoading, setDataLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [slug, setSlug] = useState(String);
 
   const [pages, setPages] = useState<any[]>([]);
   const [livePages, setLivePages] = useState<any[]>([]);
@@ -68,7 +73,7 @@ export const PageProvider = ({ children }: { children: React.ReactNode }) => {
 
 
   return (
-    <PageContext.Provider value={{ loading, pages, livePages, menus, fetchData, setDataLoading }}>
+    <PageContext.Provider value={{ loading, pages, livePages, menus, fetchData, setDataLoading,slug,setSlug }}>
       {children}
     </PageContext.Provider>
   );

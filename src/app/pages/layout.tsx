@@ -14,25 +14,21 @@ interface SubItem {
 }
 
 
-interface ActiveMenu {
-  items: MenuItem[];
-}
-
 // Props type for layout
 interface RootLayoutProps {
   children: React.ReactNode;
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
-  const [menu, setMenu] = useState<ActiveMenu | null>(null);
-  const [menu2, setMenu2] = useState<ActiveMenu | null>(null);
+  const [menu, setMenu] = useState< null>(null);
+  const [menu2, setMenu2] = useState<null>(null);
   const router = useRouter();
 
   const getMenu = async () => {
     try {
-      const res = await axios.get<{ menu: ActiveMenu }>("/api/admin/menus/navbar");
+      const res = await axios.get<{ menu: any }>("/api/admin/menus/navbar");
       setMenu(res.data.menu);
-      const res2 = await axios.get<{ menu: ActiveMenu }>("/api/admin/menus/footer");
+      const res2 = await axios.get<{ menu: any }>("/api/admin/menus/footer");
       setMenu2(res2.data.menu);
     } catch (error) {
       console.error("Error fetching menu:", error);

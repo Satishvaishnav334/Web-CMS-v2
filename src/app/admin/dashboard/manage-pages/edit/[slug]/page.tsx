@@ -197,7 +197,7 @@ export default function EditPage() {
 
       {/* Fullscreen Studio Editor */}
       {showEditor && (
-        <div className="flex-1 w-full">
+        <div className="flex-1 h-full w-full">
           <StudioEditor
             key={editorKey}
             onEditor={(editor) => {

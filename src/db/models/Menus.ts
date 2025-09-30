@@ -9,7 +9,6 @@ interface SubMenuItem {
 interface MenuItem {
   id: string;
   label: string;
-
   pageId?: mongoose.Schema.Types.ObjectId;
   type: "page" | "dropdown";
   subItems: SubMenuItem[];
@@ -17,6 +16,7 @@ interface MenuItem {
 
 interface Menu extends Document {
   name: string;
+  slug: string;
   menuType: "footer" | "navbar" | "none";
   items: MenuItem[];
   html: string;
@@ -42,9 +42,10 @@ const MenuItemSchema = new Schema<MenuItem>({
 const MenuSchema = new Schema<Menu>(
   {
     name: { type: String, required: true },
+    slug: { type: String, require: true ,unique:true},
     items: [MenuItemSchema],
     html: {
-      type: String,  default: `<nav class="navbar">
+      type: String, default: `<nav class="navbar">
   <div class="logo">{{name}}</div>
   <ul class="nav-links">
     {{#each menu}}
@@ -64,7 +65,7 @@ const MenuSchema = new Schema<Menu>(
 </nav>
 `},
     css: {
-      type: String,  default: `/* Navbar Container */
+      type: String, default: `/* Navbar Container */
 .navbar {
   display: flex;
   justify-content: space-between;

@@ -53,6 +53,7 @@ interface Menu {
     _id: string;
     menuType: string;
     name: string;
+    slug: string;
     items: MenuItemType[];
     createdAt: string;
 }
@@ -371,11 +372,12 @@ function SortableMenuItem({
 
 export default function MenuBuilder() {
     const [menuName, setMenuName] = useState("");
+    const [slug, setSlug] = useState("");
     const [menuItems, setMenuItems] = useState<MenuItemType[]>([]);
     const [pages, setPages] = useState<Page[]>([]);
     const [existingMenus, setExistingMenus] = useState<Menu[]>([]);
     const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
-    const {loading, setDataLoading} = usePageContext();
+    const { loading, setDataLoading } = usePageContext();
     const [error, setError] = useState("");
     const router = useRouter()
     const sensors = useSensors(useSensor(PointerSensor));
@@ -495,17 +497,21 @@ export default function MenuBuilder() {
 
         setDataLoading(true);
         setError("");
+        const generatedSlug = slug
+            ? slug.trim().toLowerCase().replace(/\s+/g, "-")
+            : menuName.trim().toLowerCase().split(" ").join("-");
 
         try {
             let response;
             if (editingMenu) {
-                response = await fetch(`/api/admin/menus/${editingMenu._id}`, {
+                response = await fetch(`/api/admin/menus/${editingMenu.slug}`, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                         name: menuName,
+                        slug: generatedSlug,
                         items: menuItems
                     })
                 });
@@ -518,6 +524,7 @@ export default function MenuBuilder() {
                     },
                     body: JSON.stringify({
                         name: menuName,
+                        slug: generatedSlug,
                         items: menuItems
                     })
                 });
@@ -533,10 +540,11 @@ export default function MenuBuilder() {
 
             // Reset form
             setMenuName("");
+            setSlug("");
             setMenuItems([]);
             setEditingMenu(null);
             fetchMenus();
-           
+
         } catch (error: any) {
             console.error("Error saving menu:", error);
             setError(error.message || "Failed to save menu");
@@ -564,15 +572,16 @@ export default function MenuBuilder() {
 
         setEditingMenu(menu);
         setMenuName(menu.name);
+        setSlug(menu.slug)
         setMenuItems(normalizedItems);
     };
 
 
-    const deleteMenu = async (menuId: string) => {
-        
+    const deleteMenu = async (slug: string) => {
+
 
         try {
-            const response = await fetch(`/api/admin/menus?id=${menuId}`, {
+            const response = await fetch(`/api/admin/menus/${slug}`, {
                 method: "DELETE",
             });
 
@@ -593,6 +602,7 @@ export default function MenuBuilder() {
 
     const resetForm = () => {
         setMenuName("");
+        setSlug("");
         setMenuItems([]);
         setEditingMenu(null);
         setError("");
@@ -640,6 +650,16 @@ export default function MenuBuilder() {
                                 value={menuName}
                                 onChange={(e) => setMenuName(e.target.value)}
                                 placeholder="Enter unique menu name (e.g., Main Navigation, Footer Menu)"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Menu Slug
+                            </label>
+                            <input
+                                type="text"
+                                value={slug}
+                                onChange={(e) => setSlug(e.target.value)}
+                                placeholder="Enter unique menu Slug (e.g., main-nav, primary-menu)"
                                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
@@ -731,20 +751,20 @@ export default function MenuBuilder() {
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => deleteMenu(menu._id)}
+                                            onClick={() => deleteMenu(menu.slug)}
                                             className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                                         >
                                             <Trash2 size={14} />
                                             Delete
                                         </button>
                                         <button
-                                            onClick={() => router.push(`/admin/dashboard/manage-menu/edit/${menu._id}`)}
+                                            onClick={() => router.push(`/admin/dashboard/manage-menu/edit/${menu.slug}`)}
                                             className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                                         >
                                             <Trash2 size={14} />
-                                           Style
+                                            Style
                                         </button>
-                                        
+
                                     </div>
                                 </li>
                             ))}

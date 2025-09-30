@@ -1,16 +1,18 @@
 import Menu from "@/db/models/Menus";
 import connectDB from '@/lib/connect'
 import { NextRequest, NextResponse } from "next/server";
-
+import pages from "@/db/models/pages";
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ slug: string; }>; }
 ) {
-  const { id } = await context.params;
+  const { params } = context; // Destructure params from context
+  const { slug } = await params;
 
   try {
-    await connectDB(); // make sure DB is connected
-    const menu = await Menu.findById(id)
+    await connectDB();
+    pages; // make sure DB is connected
+    const menu = await Menu.findOne({slug})
       .populate("items.pageId")
       .populate("items.subItems.pageId");
     if (!menu) {
@@ -25,16 +27,19 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ id: string; }>; }
+  context: { params: Promise<{ slug: string; }>; }
 ) {
   const { params } = context; // Destructure params from context
-  const { id } = await params;
+  const { slug } = await params;
 
   try {
     await connectDB();
-    const { name, items } = await request.json();
+    const { name, items, slug } = await request.json();
+    const generatedSlug = slug
+      ? slug.trim().toLowerCase().replace(/\s+/g, "-")
+      : name.trim().toLowerCase().split(" ").join("-");
 
-    if (!id) {
+    if (!slug) {
       return NextResponse.json(
         { success: false, message: "Menu ID is required" },
         { status: 400 }
@@ -54,17 +59,16 @@ export async function PUT(
       })),
     }));
 
-    // ✅ Update only name & items, keep existing menuType untouched
-    const menu = await Menu.findByIdAndUpdate(
-      id,
-      { name: name?.trim(), items: cleanItems },
+    const menu = await Menu.findOneAndUpdate(
+      {slug},
+      { name: name?.trim(), items: cleanItems ,generatedSlug},
       { new: true, runValidators: true }
     );
 
     if (!menu) {
       return NextResponse.json(
         { success: false, message: "Menu not found" },
-        { status: 404 }
+        { status: 500 }
       );
     }
 
@@ -82,10 +86,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string; }>; }
+  context: { params: Promise<{ slug: string; }>; }
 ) {
   const { params } = context; // Destructure params from context
-  const { id } = await params;
-  await Menu.findByIdAndDelete(id);
+  const { slug } = await params;
+  await Menu.findOneAndDelete({slug});
   return new Response(JSON.stringify({ success: true }));
 }

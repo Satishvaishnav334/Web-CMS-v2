@@ -1,13 +1,16 @@
 // src/app/api/admin/menus/route.ts
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/connect";
-import  Menu  from "@/db/models/Menus";
+import Menu from "@/db/models/Menus";
 
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { name, items,menuType } = await req.json();
-    
+    const { name, items, menuType, slug } = await req.json();
+    const generatedSlug = slug
+      ? slug.trim().toLowerCase().replace(/\s+/g, "-")
+      : name.trim().toLowerCase().split(" ").join("-");
+
     if (!name || !name.trim()) {
       return NextResponse.json(
         { success: false, message: "Menu name is required" },
@@ -26,6 +29,7 @@ export async function POST(req: Request) {
 
     const menu = await Menu.create({
       name: name.trim(),
+      slug: generatedSlug,
       items: items || [],
       menuType: menuType || "none"
     });
@@ -43,8 +47,8 @@ export async function GET() {
   try {
     await connectDB();
     const menus = await Menu.find().populate("items.pageId").populate("items.subItems.pageId");
-    
-     return NextResponse.json({ menus}, { status:200 });
+
+    return NextResponse.json({ menus }, { status: 200 });
   } catch (error) {
     console.error("Error fetching menus:", error);
     return NextResponse.json(
@@ -61,7 +65,7 @@ export async function DELETE(req: Request) {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-    
+
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Menu ID is required" },
@@ -70,7 +74,7 @@ export async function DELETE(req: Request) {
     }
 
     const menu = await Menu.findByIdAndDelete(id);
-    
+
     if (!menu) {
       return NextResponse.json(
         { success: false, message: "Menu not found" },

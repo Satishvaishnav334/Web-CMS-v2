@@ -7,8 +7,8 @@ interface MenusProps {
 
 export default async function Page({ params }: MenusProps) {
   await dbConnect();
-  const name = params.slug;
-  const page = await Menus.findOne({ name });
+  const slug = params.slug;
+  const page = await Menus.findOne({ slug });
 
   if (!page) return notFound();
   console.log(page.html)

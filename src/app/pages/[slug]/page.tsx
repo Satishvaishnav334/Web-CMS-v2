@@ -9,7 +9,7 @@ interface PageProps {
 // ✅ Dynamic SEO Metadata
 export async function generateMetadata({ params }: PageProps) {
   await dbConnect();
-  const slug = params.slug;
+  const slug = params.slug; // ❌ no await here
   const page = await PageModel.findOne({ slug });
 
   if (!page) return {};
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function Page({ params }: PageProps) {
   await dbConnect();
-  const slug = params.slug;
+  const slug = params.slug; // ❌ no await here
   const page = await PageModel.findOne({ slug });
 
   if (!page) return notFound();

@@ -6,6 +6,8 @@ import "@grapesjs/studio-sdk/style";
 import 'grapesjs-component-code-editor'; // Code editor plugin
 import 'grapesjs-component-code-editor/dist/grapesjs-component-code-editor.min.css';
 import axios from "axios";
+import { toast } from "sonner";
+import { usePageContext } from "@/components/context/PageContext";
 
 export default function EditPage() {
   const router = useRouter();
@@ -19,7 +21,7 @@ export default function EditPage() {
   const [status, setStatus] = useState("draft");
   const [page, setPage] = useState<any>(null);
   const [showEditor, setShowEditor] = useState(false);
-
+  const {setDataLoading} = usePageContext()
   // Editor reference
   const [editorRef, setEditorRef] = useState<any>(null);
   const [editorKey, setEditorKey] = useState(0); // force remount
@@ -49,6 +51,7 @@ export default function EditPage() {
 
   // Save or publish page
   const handleSave = async (publish: boolean = false) => {
+    setDataLoading(true)
     const html = editorRef ? editorRef.getHtml() : page?.html;
     const css = editorRef ? editorRef.getCss() : page?.css;
     const json = editorRef ? editorRef.getComponents().toJSON() : page?.json;
@@ -82,7 +85,8 @@ export default function EditPage() {
     } catch (err) {
       console.error("Error saving page:", err);
     } finally {
-      
+      toast("page updated succesfully")
+      setDataLoading(false)
       if (editorRef) {
         editorRef.destroy();
         setEditorRef(null);
